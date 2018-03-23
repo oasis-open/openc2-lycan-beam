@@ -19,11 +19,17 @@
 
 <p>Statement of Purpose for this OASIS TC Open Repository (openc2-lycan-beam) as <a href="https://lists.oasis-open.org/archives/openc2/201803/msg00012.html">proposed</a> and <a href="https://www.oasis-open.org/committees/download.php/62755/OpenC2-TC-Minutes-2018-03-21.docx">approved</a> [<a href="https://issues.oasis-open.org/browse/TCADMIN-2866">bis</a>] by the TC:</p>
 
-<p>The purpose of this OASIS TC Open repository is to develop a collection of applications and libraries, coded in languages that run on the BEAM virtual machine (<i>e.g.</i>, erlang, elixir), for the purpose of implementing OpenC2.   Repository assets will demonstrate implementations of OpenC2 that run on beam, including erlang and elixir codebases, to facilitate other other development efforts.</p>
+<p>The purpose of this OASIS TC Open repository is to develop a collection of applications and libraries, coded in languages that run on the BEAM virtual machine (<i>e.g.</i>, <a href="https://en.wikipedia.org/wiki/Erlang_(programming_language)">erlang</a> and <a href="https://elixir-lang.org/">elixir</a>), for the purpose of implementing OpenC2.   Repository assets will demonstrate implementations of OpenC2 that run on beam, including erlang and elixir codebases, to facilitate other other development efforts. [<a href="http://erlang.org/faq/implementations.html#idp32695248">BEAM</a> stands for Bogdan/Bj&ouml;rn's Erlang Abstract Machine -rcc]</p>
 
 <p>This openc2-lycan-beam repository is managed as an open source effort in accordance with the MIT open source license, initially under the leadership and Maintainer role of Duncan Sparrell (sFractal Consulting).</p>
 
 <p>The OASIS OpenC2 Technical Committee was chartered to address matters as they pertain to command and control of cyber defense technologies, and to maintain a library of prototype implementations, sample commands, polyglot implementation and other artifacts as they pertain to the command and control of cyber defense technologies. TC consensus was found to develop and maintain this library as a TC Open Repository.  The OpenC2 TC has already initiated creation of transformation (<i>aka</i> lycan) libraries for python and java.</p>
+
+<!--
+<a href="https://en.wikipedia.org/wiki/Erlang_(programming_language)">
+<a href="https://elixir-lang.org/">
+<a href="http://erlang.org/faq/implementations.html#idp32695248">BEAM</a> stands for Bogdan/Bj&ouml;rn's Erlang Abstract Machine
+-->
 
 </div>
 
