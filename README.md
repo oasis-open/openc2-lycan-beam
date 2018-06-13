@@ -35,7 +35,38 @@
 
 <div><h2><a id="purposeClarifications">Additions to Statement of Purpose</a></h2>
 
-<p>Repository Maintainers may include here any clarifications &mdash; any additional sections, subsections, and paragraphs that the Maintainer(s) wish to add as descriptive text, reflecting (sub-) project status, milestones, releases, modifications to statement of purpose, etc.  The project Maintainers will create and maintain this content on behalf of the participants.</p>
+<p>
+The organization of this repository is a work in progress.
+As it grows, it may need reorganization.
+For now, it is organized by beam application/library.
+<ul>
+<li>Utils - library utilities useful across applications
+<li>bawnl - Beam AWs Nacl Lycan - ie a lycan (transformer) 
+that runs on BEAM
+to interface OpenC2 to the AWS API's for NACL's
+<li>bawsl - Beam AWs Security group Lycan - ie a lycan (transformer) 
+that runs on BEAM
+to interface OpenC2 to the AWS API's for Security Groups
+<li>baznl - Beam AZure Nacl Lycan - ie a lycan (transformer) 
+that runs on BEAM
+to interface OpenC2 to the Azure API's for NACL's
+<li>bazsl - Beam AZure Security group Lycan - ie a lycan (transformer) 
+that runs on BEAM
+to interface OpenC2 to the Azure API's for Security Groups
+<li> bdofl - Beam Digital Ocean cloud Firewall Lycan -
+ie a lycan (transformer)
+that runs on BEAM
+to interface OpenC2 to the
+Digital Ocean 
+Cloud Firewall.
+<li> bosfl - Beam OpenStack Fwaas Lycan -
+ie a lycan (transformer)
+that runs on BEAM
+to interface OpenC2 to the
+Openstack
+Firewall-as-a-Service (FWaas).
+</ul>
+</p>
 </div>
 
 <div>
