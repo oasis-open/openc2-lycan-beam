@@ -35,11 +35,6 @@
 
 <div><h2><a id="purposeClarifications">Additions to Statement of Purpose</a></h2>
 
-trying md without html in middle of all this
- * ist
- * list
-add haha and haga
-
 The organization of this repository is a work in progress.
 As it grows, it may need reorganization.
 For now, it is organized by beam application/library.
