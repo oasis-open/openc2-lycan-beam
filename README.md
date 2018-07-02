@@ -35,38 +35,28 @@
 
 <div><h2><a id="purposeClarifications">Additions to Statement of Purpose</a></h2>
 
-<p>
 The organization of this repository is a work in progress.
 As it grows, it may need reorganization.
 For now, it is organized by beam application/library.
-<ul>
-<li>Utils - library utilities useful across applications
-<li>bawnl - Beam AWs Nacl Lycan - ie a lycan (transformer) 
-that runs on BEAM
-to interface OpenC2 to the AWS API's for NACL's
-<li>bawsl - Beam AWs Security group Lycan - ie a lycan (transformer) 
-that runs on BEAM
-to interface OpenC2 to the AWS API's for Security Groups
-<li>baznl - Beam AZure Nacl Lycan - ie a lycan (transformer) 
-that runs on BEAM
-to interface OpenC2 to the Azure API's for NACL's
-<li>bazsl - Beam AZure Security group Lycan - ie a lycan (transformer) 
-that runs on BEAM
-to interface OpenC2 to the Azure API's for Security Groups
-<li> bdofl - Beam Digital Ocean cloud Firewall Lycan -
-ie a lycan (transformer)
-that runs on BEAM
-to interface OpenC2 to the
-Digital Ocean 
-Cloud Firewall.
-<li> bosfl - Beam OpenStack Fwaas Lycan -
-ie a lycan (transformer)
-that runs on BEAM
-to interface OpenC2 to the
-Openstack
-Firewall-as-a-Service (FWaas).
-</ul>
-</p>
+ * haha - Https Api Helloworld Actuator
+    * ie a very simple do nothing actuator that is conformant to language
+ * haga - Https Api GlobalWelcome Actuator
+    * ie slighty fancier do nothing actuator that is conformant to language
+ * Utils
+    * library utilities useful across applications
+ * bawnl - Beam AWs Nacl Lycan 
+    *  ie a lycan (transformer) that runs on BEAM to interface OpenC2 to the AWS API's for NACL's
+ * bawsl - Beam AWs Security group Lycan 
+    *  ie a lycan (transformer) that runs on BEAM to interface OpenC2 to the AWS API's for Security Groups
+ * baznl - Beam AZure Nacl Lycan 
+    *  ie a lycan (transformer) that runs on BEAM to interface OpenC2 to the Azure API's for NACL's
+ * bazsl - Beam AZure Security group Lycan 
+    *  ie a lycan (transformer) that runs on BEAM to interface OpenC2 to the Azure API's for Security Groups
+ *  bdofl - Beam Digital Ocean cloud Firewall Lycan 
+    * ie a lycan (transformer) that runs on BEAM to interface OpenC2 to the Digital Ocean Cloud Firewall.
+ *  bosfl - Beam OpenStack Fwaas Lycan 
+    * ie a lycan (transformer) that runs on BEAM to interface OpenC2 to the Openstack Firewall-as-a-Service (FWaas).
+
 </div>
 
 <div>
