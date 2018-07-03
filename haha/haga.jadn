@@ -205,7 +205,7 @@
 
   ["URI", "String", ["@uri"], "Uniform Resource Identifier"],
 
-  ["Valid_Action_Targets" "", [], "list of valid targets for each action. Note Global Welcome is an illustrative actuator so these pairings are for coverage, not that they make sense",
+  ["Valid_Action_Targets", "", [], "list of valid targets for each action. Note Global Welcome is an illustrative actuator so these pairings are for coverage, not that they make sense",
      [
        ["scan", [ "memory" ] ],
        ["locate", [ "device" ] ],
@@ -238,9 +238,10 @@
        ["sync", [ "disk_partition" ] ],
        ["investigate", [ "domain_name" ] ],
        ["mitigate", [ "email_message" ] ],
-       ["remediate", [ "user_account"] ],
+       ["remediate", [ "user_account"] ]
      ] 
   ]
+ ]
  ]
 }
 
