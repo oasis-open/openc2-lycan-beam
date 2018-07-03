@@ -64,7 +64,7 @@
 
   ["Body", "Choice", [], "", [
     [1, "command", "OpenC2-Command", [], "A command"],
-    [2, "response", "OpenC2-Response", [], "A response"],
+    [2, "response", "OpenC2-Response", [], "A response"]
     ]
   ],
 
@@ -82,7 +82,8 @@
     [2, "complete", "Respond when all aspects of command completed"]]
   ],
 
-  ["Command-ID", "String", [], "Uniquely identifies a particular command - TBD syntax"],
+  ["Command-ID", "String", [], "Uniquely identifies a particular command - TBD syntax"]
 
   ]
+ ]
 }
