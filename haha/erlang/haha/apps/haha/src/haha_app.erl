@@ -2,24 +2,24 @@
 %%% Copyright (c) 2018, Duncan Sparrell, sFractal Consulting
 %%% MIT License
 
-%%% Permission is hereby granted, free of charge, to any person 
-%%% obtaining a copy of this software and associated documentation files 
-%%% (the "Software"), to deal in the Software without restriction, 
-%%% including without limitation the rights to 
-%%% use, copy, modify, merge, publish, distribute, sublicense, and/or 
-%%% sell copies of the Software, and to permit persons to whom the 
+%%% Permission is hereby granted, free of charge, to any person
+%%% obtaining a copy of this software and associated documentation files
+%%% (the "Software"), to deal in the Software without restriction,
+%%% including without limitation the rights to
+%%% use, copy, modify, merge, publish, distribute, sublicense, and/or
+%%% sell copies of the Software, and to permit persons to whom the
 %%% Software is furnished to do so, subject to the following conditions:
 
-%%% The above copyright notice and this permission notice 
+%%% The above copyright notice and this permission notice
 %%% shall be included in all copies or substantial portions of the Software.
 
-%%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
-%%% EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
-%%% WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
-%%% AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
-%%% HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-%%% WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-%%% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+%%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+%%% EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+%%% WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+%%% AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+%%% HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+%%% WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+%%% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 %%% OTHER DEALINGS IN THE SOFTWARE.
 
 %%%-------------------------------------------------------------------
@@ -67,10 +67,6 @@ start(_StartType, _StartArgs) ->
     AppEnv = application:get_all_env(),
     lager:info("env: ~p", [AppEnv]),
 
-    %% start env server
-    EnvSvrReturn = oc_env:first_start(),
-    lager:info("envserver return: ~p", [EnvSvrReturn]),
-
     %% return
     {ok, self()}.
 
@@ -104,21 +100,16 @@ start_webserver() ->
     [
       {
         '_'  %virtual hostname (any host name)
-      , [
-          {"/status", status_handler, []}
-        , {"/ok", status_ok_handler, []}  % returns ok if service working
-        , {"/openc2", openc2_handler, []}    % handles the meat of openc2
-        , {"/init", init_handler, []}    % handles starting/restarting the svr
+      , [ {"/openc2", openc2_handler, []}    % handles the meat of openc2
         ]
       }
     ],
   Dispatch = cowboy_router:compile(Routes),
 
-  %% start cowboy
-  {ok, CowboyReturn} = cowboy:start_http( http
-                             , ListenerCount
+  %% start cowboy (in clear for now, need to add tls so start_tls instead)
+  {ok, CowboyReturn} = cowboy:start_clear( my_http_listener
                              , [{port, Port}]
-                             , [{env, [{dispatch, Dispatch}]}]
+                             , #{env => #{dispatch => Dispatch} }
                              ),
   lager:info("Cowboy started returned: ~p", [CowboyReturn] ),
 
