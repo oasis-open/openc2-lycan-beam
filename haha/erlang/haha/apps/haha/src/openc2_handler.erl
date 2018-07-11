@@ -235,10 +235,11 @@ structure_check( true  % IdKeyExists
     lager:info("ActionBin ~p", [ActionBin]),
     query_check(ActionBin, TargetBin, Req, State).
 
-query_check(<<"query">>, <<"Hello">>, Req, State) ->
-    %% query action, Hello target
+query_check(<<"query">>, <<"whatareyou">>, Req, State) ->
+    %% query action, whatareyou target
     %%figure out good reply;
-    OuputJson = <<"World">>,
+    HelloWorld = <<"Hello World">>,
+    OuputJson = jsx:encode(HelloWorld),
     Req2 = cowboy_req:reply( 200
                            , #{<<"content-type">> => <<"application/json">>}
                            , OuputJson
@@ -247,9 +248,10 @@ query_check(<<"query">>, <<"Hello">>, Req, State) ->
 
     {ok, Req2, State};
 
-query_check(<<"query">>, <<"what">>, Req, State) ->
+query_check(<<"query">>, <<"profile">>, Req, State) ->
     %% figure out
-    OuputJson = <<"World">>,
+    HelloWorld = <<"Need to figure this part out still">>,
+    OuputJson = jsx:encode(HelloWorld),
     Req2 = cowboy_req:reply( 200
                            , #{<<"content-type">> => <<"application/json">>}
                            , OuputJson
@@ -259,9 +261,10 @@ query_check(<<"query">>, <<"what">>, Req, State) ->
 
 query_check(<<"query">>, _Target, Req, State) ->
     %% Bad target
+    ErrorMsg = <<"Bad Target, only profile, whatareyou supported">>,
     Req2 = cowboy_req:reply( 400
                            , #{<<"content-type">> => <<"text/html">>}
-                           , <<"Bad Target, only profile, hello supported">>
+                           , ErrorMsg
                            , Req
                            ),
     %% return (don't move on since request was bad)
