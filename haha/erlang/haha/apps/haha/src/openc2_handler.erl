@@ -232,10 +232,52 @@ structure_check( true  % IdKeyExists
     ActionBin = maps:get( <<"action">>, JsonMap ),
     lager:info("ActionBin ~p", [ActionBin]),
     TargetBin = maps:get( <<"target">>, JsonMap ),
-    lager:info("ActionBin ~p", [ActionBin]),
-    query_check(ActionBin, TargetBin, Req, State).
+    lager:info("TargetBin ~p", [TargetBin]),
+    %% parse the type of target so can select on it
+    %%  TargetInfo = { TargetIsBinary, TargetIsMap, TopTarget, SpecifierList}
+    TargetInfo = target_typing(TargetBin),
+    lager:info("sc: TargetInfo = ~p", [TargetInfo]),
+    query_check(ActionBin, TargetInfo, Req, State).
 
-query_check(<<"query">>, <<"whatareyou">>, Req, State) ->
+target_typing(TargetBin) ->
+    TargetIsBinary = is_binary(TargetBin),
+    TargetIsMap = is_map(TargetBin),
+    {TopTarget, SpecifierList} = string_map( TargetIsBinary
+                                           , TargetIsMap
+                                           , TargetBin
+                                           ),
+    {TargetIsBinary, TargetIsMap, TopTarget, SpecifierList}.
+
+string_map(true, _TargetIsMap, TargetBin) ->
+    TopTarget = TargetBin,
+    SpecifierList = [],
+    {TopTarget, SpecifierList};
+string_map(false, true, TargetBin) ->
+    lager:info("stringmap TargetBin as map"),
+    TargetList = maps:keys(TargetBin),
+    %% error if not one and only one target in map
+    case length(TargetList) of
+        0 ->
+          {error, ["only one target allowed"]};
+        1 ->
+          %% the one item is the target
+          TopTarget = lists:nth(1,TargetList),
+          SpecifierMap = maps:get(TopTarget,TargetBin),
+          SpecifierList = maps:keys(SpecifierMap),
+          {TopTarget, SpecifierList};
+        _ ->
+          {error, ["only one target allowed"]}
+    end;
+string_map(false, false, _) ->
+    %% bad target value since neither string nor map
+    {error, ["bad target json"]}.
+
+%% query_check
+%%  query_check(ActionBin, TargetInfo, Req, State)
+%%    TargetInfo = {TargetIsBinary, TargetIsMap, TopTarget, SpecifierList}
+%%
+%% case where ActionBin=query, TargetIsBinary=true, target= whatareyou
+query_check(<<"query">>, {true, false, <<"whatareyou">>, []}, Req, State) ->
     %% query action, whatareyou target
     %%figure out good reply;
     HelloWorld = <<"Hello World">>,
@@ -245,23 +287,47 @@ query_check(<<"query">>, <<"whatareyou">>, Req, State) ->
                            , OuputJson
                            , Req
                            ),
+    lager:info("query_check whatareyou"),
+    {true, Req2, State};
 
-    {ok, Req2, State};
-
-query_check(<<"query">>, <<"profile">>, Req, State) ->
+%% case where ActionBin=query, TargetIsBinary=true, target= openc2,
+%%     with no target specifiers (do return all)
+query_check(<<"query">>, {true, false, <<"openc2">>, []}, Req, State) ->
     %% figure out
-    HelloWorld = <<"Need to figure this part out still">>,
+    HelloWorld = <<"Need to figure out openc2=all still">>,
     OuputJson = jsx:encode(HelloWorld),
     Req2 = cowboy_req:reply( 200
                            , #{<<"content-type">> => <<"application/json">>}
                            , OuputJson
                            , Req
                            ),
-    {ok, Req2, State};
+    lager:info("query_check openc2 binary"),
+    {true, Req2, State};
+
+%% case where ActionBin=query, TargetIsMap=true, target= openc2,
+%%     with target specifiers
+query_check(<<"query">>, {false, true, <<"openc2">>, SpecList}, Req, State) ->
+  %% figure out
+  lager:info("query_check SpecList ~p", [SpecList]),
+  {HtmlCode, OutputJson} = case process_spec_list(SpecList, []) of
+      {error, _ErrorMsg} ->
+          {400, jsx:encode(<<"Problem with Target Specifiers">>)};
+      {ok, Output} ->
+          lager:info("query_check output ~p", [Output]),
+          {200, jsx:encode(Output)}
+      end,
+
+  Req2 = cowboy_req:reply( HtmlCode
+                         , #{<<"content-type">> => <<"application/json">>}
+                         , OutputJson
+                         , Req
+                         ),
+  lager:info("query_check openc2 map"),
+  {true, Req2, State};
 
 query_check(<<"query">>, _Target, Req, State) ->
     %% Bad target
-    ErrorMsg = <<"Bad Target, only profile, whatareyou supported">>,
+    ErrorMsg = <<"Bad Target">>,
     Req2 = cowboy_req:reply( 400
                            , #{<<"content-type">> => <<"text/html">>}
                            , ErrorMsg
@@ -275,9 +341,38 @@ query_check(_Action, _Target, Req, State) ->
     %% bad action
     Req2 = cowboy_req:reply( 400
                            , #{<<"content-type">> => <<"text/html">>}
-                           , <<"Bad Action, only query supported">>
+                           , <<"Bad Action">>
                            , Req
                            ),
     %% return (don't move on since request was bad)
     %%   is this correct return tuple?
     {ok, Req2, State}.
+
+%% process_spec_list(SpecList, Output) creates output depending on specifiers
+process_spec_list([], Output) ->
+    %% spec list now empty so done
+    {ok, Output};
+process_spec_list([H | T], Output) ->
+      %% recurse thru specs creating output
+      case output_spec(H, Output) of
+          %% output_spec returns {Status, NewOutputList} or {error, error msg}
+          {error, ErrorMsg} ->
+              lager:info("got to process_spec error ~p", [ErrorMsg]),
+              {error, ErrorMsg};
+          {ok, NewOutputList} ->
+              lager:info("got to process_spec NewOutputList ~p", [NewOutputList]),
+              process_spec_list(T, NewOutputList)
+          end.
+
+%% output_spec creates output for a particular specifiers
+output_spec(<<"profile">>, Output) ->
+    %% return new list with profile infomation
+    { ok, Output ++ [{<<"x_haha">>, <<"put url here">>}]};
+
+output_spec(<<"schema">>, Output) ->
+  %% return schema
+  { ok, Output ++ [{<<"schema">>, <<"figure out how to put schema here">>}]};
+
+output_spec(_, _) ->
+  %% unknown specifier
+  {error, "unknown specifier"}.
