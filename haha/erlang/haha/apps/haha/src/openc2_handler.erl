@@ -309,11 +309,17 @@ query_check(<<"query">>, {true, false, <<"openc2">>, []}, Req, State) ->
 query_check(<<"query">>, {false, true, <<"openc2">>, SpecList}, Req, State) ->
   %% figure out
   lager:info("query_check SpecList ~p", [SpecList]),
-  HelloWorld = <<"Need to figure out openc2=list still">>,
-  OuputJson = jsx:encode(HelloWorld),
-  Req2 = cowboy_req:reply( 200
+  {HtmlCode, OutputJson} = case process_spec_list(SpecList, []) of
+      {error, _ErrorMsg} ->
+          {400, jsx:encode(<<"Problem with Target Specifiers">>)};
+      {ok, Output} ->
+          lager:info("query_check output ~p", [Output]),
+          {200, jsx:encode(Output)}
+      end,
+
+  Req2 = cowboy_req:reply( HtmlCode
                          , #{<<"content-type">> => <<"application/json">>}
-                         , OuputJson
+                         , OutputJson
                          , Req
                          ),
   lager:info("query_check openc2 map"),
@@ -341,3 +347,32 @@ query_check(_Action, _Target, Req, State) ->
     %% return (don't move on since request was bad)
     %%   is this correct return tuple?
     {ok, Req2, State}.
+
+%% process_spec_list(SpecList, Output) creates output depending on specifiers
+process_spec_list([], Output) ->
+    %% spec list now empty so done
+    {ok, Output};
+process_spec_list([H | T], Output) ->
+      %% recurse thru specs creating output
+      case output_spec(H, Output) of
+          %% output_spec returns {Status, NewOutputList} or {error, error msg}
+          {error, ErrorMsg} ->
+              lager:info("got to process_spec error ~p", [ErrorMsg]),
+              {error, ErrorMsg};
+          {ok, NewOutputList} ->
+              lager:info("got to process_spec NewOutputList ~p", [NewOutputList]),
+              process_spec_list(T, NewOutputList)
+          end.
+
+%% output_spec creates output for a particular specifiers
+output_spec(<<"profile">>, Output) ->
+    %% return new list with profile infomation
+    { ok, Output ++ [{<<"x_haha">>, <<"put url here">>}]};
+
+output_spec(<<"schema">>, Output) ->
+  %% return schema
+  { ok, Output ++ [{<<"schema">>, <<"figure out how to put schema here">>}]};
+
+output_spec(_, _) ->
+  %% unknown specifier
+  {error, "unknown specifier"}.
