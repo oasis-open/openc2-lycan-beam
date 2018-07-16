@@ -163,7 +163,7 @@ test_bad_method(_Config) ->
     %% test if send get when expecting post
 
     MyPort = application:get_env(haha, port, 8080),
-    lager:info("test_bad_method:port= ~p", [MyPort]),
+    lager:info("test_bad_method"),
     {ok, Conn} = gun:open("localhost", MyPort),
 
     %% send get to openc2 which only allows posts
@@ -176,12 +176,8 @@ test_bad_method(_Config) ->
     %% Check contents of reply
     response = element(1,Response),
     fin = element(2, Response),
-    Status = element(3,Response),
-    false = is_binary(Status),
-    true = is_integer(Status),
-    false = is_atom(Status),
-    false = is_bitstring(Status),
 
+    Status = element(3,Response),
     ExpectedStatus = 405,
     ExpectedStatus = Status,
 
@@ -197,46 +193,38 @@ test_post_missing_body(_Config) ->
     %% test proper reponse to bad input (no body to html request)
 
     MyPort = application:get_env(haha, port, 8080),
-    %%lager:info("test_post:port= ~p", [MyPort]),
-    {ok, Conn} = gun:open("localhost", MyPort),
+    lager:info("test_post_missing_body"),
+    {ok, ConnPid} = gun:open("localhost", MyPort),
+
+    %% send json post with no body
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
-
     Body = "",
-    Options = #{},
+    StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
 
-    %% send json command to openc2
-    %%lager:info("about to send json to openc2"),
-    {ok, Response} = gun:post(Conn, "/openc2", Headers, Body, Options),
-    lager:info("sent json, got: ~p", [Response] ),
+    %% check reply
+    Response = gun:await(ConnPid,StreamRef),
+    lager:info("test_post_missing_body:Response= ~p", [Response]),
 
-    %% verify got 400 (bad request) for status code
-    #{ status_code := 400 } = Response,
-    %%lager:info("status = ~p", [RespStatus]),
+    %% Check contents of reply
+    response = element(1,Response),
+    nofin = element(2, Response),
 
-    #{ headers := RespHeaders} = Response,
-    %%lager:info("headers = ~p", [RespHeaders]),
-    #{ body := RespBody } = Response,
-    lager:info("body = ~p", [RespBody]),
+    Status = element(3,Response),
+    ExpectedStatus = 400,
+    ExpectedStatus = Status,
 
-    %% test header contents are correct
-    { <<"server">>, <<"Cowboy">>} =  lists:keyfind( <<"server">>
-                                                  , 1
-                                                  , RespHeaders
-                                                  ),
-    { <<"date">>, _Date } =  lists:keyfind(<<"date">>, 1, RespHeaders),
-    %% note content length is for error mesg "Missing Body."
-    { <<"content-length">>, <<"13">>} =  lists:keyfind( <<"content-length">>
-                                                      , 1
-                                                      , RespHeaders
-                                                      ),
-    %% not sure why error response is in html?
-    { <<"content-type">>, <<"text/html">>} =  lists:keyfind( <<"content-type">>
-                                                           , 1
-                                                           , RespHeaders
-                                                           ),
+    RespHeaders = element(4,Response),
+    lists:member({<<"allow">>,<<"POST">>},RespHeaders),
+    lists:member({<<"content-length">>,<<"0">>},RespHeaders),
+    lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
+
+    %% get the body of the reply (which has error msg)
+    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
+
+    lager:info("test_post_missing_body:RespBody= ~p", [RespBody]),
 
     %% test body is what was expected
-    RespBody = <<"Missing body.">>,
+    <<"Missing http body.">> = RespBody,
 
     ok.
 
@@ -245,41 +233,31 @@ test_unsupported_media_type(_Config) ->
     %%     (html request has media type other than json)
 
     MyPort = application:get_env(haha, port, 8080),
-    %%lager:info("test_post:port= ~p", [MyPort]),
-    {ok, Conn} = gun:open("localhost", MyPort),
+    lager:info("test_unsupported_media_type"),
+    {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"text/plain">>} ],
 
     Body = "scan",
-    Options = #{},
 
     %% send json command to openc2
     %%lager:info("about to send json to openc2"),
-    {ok, Response} = gun:post(Conn, "/openc2", Headers, Body, Options),
-    lager:info("sent json, got: ~p", [Response] ),
+    StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
 
-    %% verify got 415 (unsupported media type) for status code
-    #{ status_code := 415 } = Response,
-    %%lager:info("status = ~p", [RespStatus]),
+    %% check reply
+    Response = gun:await(ConnPid,StreamRef),
+    lager:info("test_unsupported_media_type:Response= ~p", [Response]),
 
-    #{ headers := RespHeaders} = Response,
-    %%lager:info("headers = ~p", [RespHeaders]),
+    %% Check contents of reply
+    response = element(1,Response),
+    fin = element(2, Response),
+    Status = element(3,Response),
+    ExpectedStatus = 415,
+    ExpectedStatus = Status,
 
-    %% test header contents are correct
-    { <<"server">>, <<"Cowboy">>} =  lists:keyfind( <<"server">>
-                                                  , 1
-                                                  , RespHeaders
-                                                  ),
-    { <<"date">>, _Date } =  lists:keyfind(<<"date">>, 1, RespHeaders),
-    %% note content length is no body
-    { <<"content-length">>, <<"0">>} =  lists:keyfind( <<"content-length">>
-                                                     , 1
-                                                     , RespHeaders
-                                                     ),
-    %% not sure why error response is in html?
-    { <<"content-type">>, <<"text/html">>} =  lists:keyfind( <<"content-type">>
-                                                           , 1
-                                                           , RespHeaders
-                                                           ),
+    RespHeaders = element(4,Response),
+    lists:member({<<"allow">>,<<"POST">>},RespHeaders),
+    lists:member({<<"content-length">>,<<"0">>},RespHeaders),
+    lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
 
     ok.
 
