@@ -1,34 +1,49 @@
-%%%-------------------------------------------------------------------
-%%% fix boilerplate
-
-%%%-------------------------------------------------------------------
-
-%%%-------------------------------------------------------------------
-%% @doc test simple post
-%% @author Duncan Sparrell
-%% @copyright (C) 2018, sFractal Consulting LLC
-%% @end
-%%%-------------------------------------------------------------------
-
+%%% @author Duncan Sparrell
+%%% @copyright (C) 2018, sFractal Consulting LLC
+%%%
 -module(a_simple_post_SUITE).
 -author("Duncan Sparrell").
--copyright("2016, sFractal Consulting, LLC").
--license(mit).
+-license("MIT").
+-copyright("2018, Duncan Sparrell sFractal Consulting LLC").
+
+%%%-------------------------------------------------------------------
+%%% Copyright (c) 2018, Duncan Sparrell, sFractal Consulting
+%%% MIT License
+
+%%% Permission is hereby granted, free of charge, to any person
+%%% obtaining a copy of this software and associated documentation files
+%%% (the "Software"), to deal in the Software without restriction,
+%%% including without limitation the rights to
+%%% use, copy, modify, merge, publish, distribute, sublicense, and/or
+%%% sell copies of the Software, and to permit persons to whom the
+%%% Software is furnished to do so, subject to the following conditions:
+
+%%% The above copyright notice and this permission notice
+%%% shall be included in all copies or substantial portions of the Software.
+
+%%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+%%% EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+%%% WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+%%% AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+%%% HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+%%% WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+%%% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+%%% OTHER DEALINGS IN THE SOFTWARE.
+%%%-------------------------------------------------------------------
 
 %% for test export all functions
 -export( [ all/0
          , suite/0
          , init_per_suite/1
          , end_per_suite/1
-%         , test_get_ok/1
-%         , test_post/1
          , test_bad_method/1
          , test_post_missing_body/1
          , test_unsupported_media_type/1
-%         , test_bad_json/1
+         , test_bad_json/1
 %         , test_bad_action/1
 %         , test_missing_action/1
 %         , test_missing_target/1
+%         , test_post/1
 %         , send_recieve/5
          ]).
 
@@ -47,7 +62,7 @@ all() ->
     [ test_bad_method
     , test_post_missing_body
     , test_unsupported_media_type
-%    , test_bad_json
+    , test_bad_json
 %    , test_missing_action
 %    , test_post
 %    , test_bad_action
@@ -78,40 +93,6 @@ init_per_suite(Config) ->
 
 end_per_suite(Config) ->
     Config.
-
-%test_get_ok(_Config) ->
-%
-%    %% send request, get response, and deciper text response
-%    send_recieve( [ {<<"content-type">>, <<"application/text">>}
-%                  , {<<"accept">>, <<"text/plain">>}
-%                  ]
-%                , #{}      %% Options
-%                , "/ok"    %% Url
-%                , 200      %% ExpectedStatus
-%                , <<"ok">> %% ExpectedBody
-%                ),
-%
-%    %% send request, get response, and deciper html response
-%    send_recieve( [ {<<"content-type">>, <<"application/text">>}
-%                  , {<<"accept">>, <<"text/html">>}
-%                  ]
-%                , #{}      %% Options
-%                , "/ok"    %% Url
-%                , 200      %% ExpectedStatus
-%                , <<"<html><body>ok</body></html>">> %% ExpectedBody
-%                ),
-%
-%    %% send request, get response, and deciper json response
-%    send_recieve( [ {<<"content-type">>, <<"application/text">>}
-%                  , {<<"accept">>, <<"application/json">>}
-%                  ]
-%                , #{}      %% Options
-%                , "/ok"    %% Url
-%                , 200      %% ExpectedStatus
-%                , <<"{ \"status : ok\" }">> %% ExpectedBody
-%                ),
-%
-%    ok.
 
 %test_post(_Config) ->
 %    MyPort = application:get_env(haha, port, 8080),
@@ -261,54 +242,47 @@ test_unsupported_media_type(_Config) ->
 
     ok.
 
-%test_bad_json(_Config) ->
-%    %% test proper reponse to bad input (unparseable json)
-%
-%    MyPort = application:get_env(haha, port, 8080),
-%    %%lager:info("test_post:port= ~p", [MyPort]),
-%    {ok, Conn} = gun:open("localhost", MyPort),
-%    Headers = [ {<<"content-type">>, <<"application/json">>} ],
-%
-%    BadJson = ?BADJSON,
-%
-%    Body = BadJson,
-%    Options = #{},
-%
-%    %% send json command to openc2
-%    %%lager:info("about to send json to openc2"),
-%    {ok, Response} = gun:post(Conn, "/openc2", Headers, Body, Options),
-%    lager:info("sent json, got: ~p", [Response] ),
-%
-%    %% verify got 400 (bad request) for status code
-%    #{ status_code := 400 } = Response,
-%    %%lager:info("status = ~p", [RespStatus]),
-%
-%    #{ headers := RespHeaders} = Response,
-%    %%lager:info("headers = ~p", [RespHeaders]),
-%    #{ body := RespBody } = Response,
-%    lager:info("body = ~p", [RespBody]),
-%
-%    %% test header contents are correct
-%    { <<"server">>, <<"Cowboy">>} =  lists:keyfind( <<"server">>
-%                                                  , 1
-%                                                  , RespHeaders
-%                                                  ),
-%    { <<"date">>, _Date } =  lists:keyfind(<<"date">>, 1, RespHeaders),
-%    %% note content length is for error mesg "Bad JSON"
-%    { <<"content-length">>, <<"8">>} =  lists:keyfind( <<"content-length">>
-%                                                      , 1
-%                                                      , RespHeaders
-%                                                      ),
-%    %% not sure why error response is in html?
-%    { <<"content-type">>, <<"text/html">>} =  lists:keyfind( <<"content-type">>
-%                                                           , 1
-%                                                           , RespHeaders
-%                                                           ),
-%
-%    %% test body is what was expected
-%    RespBody = <<"Bad JSON">>,
-%
-%    ok.
+test_bad_json(_Config) ->
+    %% test proper reponse to bad input (unparseable json)
+
+    MyPort = application:get_env(haha, port, 8080),
+    %%lager:info("test_post:port= ~p", [MyPort]),
+    {ok, ConnPid} = gun:open("localhost", MyPort),
+    Headers = [ {<<"content-type">>, <<"application/json">>} ],
+
+    BadJson = "{]}",
+
+    %% validate Json is bad
+    false = jsx:is_json(BadJson),
+
+    %% send json command to openc2
+    StreamRef = gun:post(ConnPid, "/openc2", Headers, BadJson),
+
+    %% check reply
+    Response = gun:await(ConnPid,StreamRef),
+    lager:info("test_bad_json:Response= ~p", [Response]),
+
+    %% Check contents of reply
+    response = element(1,Response),
+    nofin = element(2, Response),
+    Status = element(3,Response),
+    ExpectedStatus = 400,
+    ExpectedStatus = Status,
+
+    RespHeaders = element(4,Response),
+    lists:member({<<"allow">>,<<"POST">>},RespHeaders),
+    lists:member({<<"content-length">>,<<"8">>},RespHeaders),
+    lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
+
+    %% get the body of the reply (which has error msg)
+    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
+
+    lager:info("test_bad_json:RespBody= ~p", [RespBody]),
+
+    %% test body is what was expected
+    <<"Bad JSON">> = RespBody,
+
+    ok.
 
 %test_bad_action(_Config) ->
 %    %% test proper reponse to bad input (unrecognized action)
