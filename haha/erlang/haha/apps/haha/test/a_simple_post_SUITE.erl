@@ -41,7 +41,7 @@
          , test_unsupported_media_type/1
          , test_bad_json/1
          , test_bad_action/1
-%         , test_missing_action/1
+         , test_missing_action/1
 %         , test_missing_target/1
          , test_post/1
 %         , send_recieve/5
@@ -63,7 +63,7 @@ all() ->
     , test_post_missing_body
     , test_unsupported_media_type
     , test_bad_json
-%    , test_missing_action
+    , test_missing_action
     , test_post
     , test_bad_action
 %    , test_missing_target
@@ -317,59 +317,48 @@ test_bad_action(_Config) ->
 
     ok.
 
-%test_missing_action(_Config) ->
-%    %% test proper reponse to bad input (missing action)
-%
-%    MyPort = application:get_env(haha, port, 8080),
-%    {ok, Conn} = gun:open("localhost", MyPort),
-%    Headers = [ {<<"content-type">>, <<"application/json">>} ],
-%
-%    %% give an invalid action
-%    SomeJson = ?MISSINGACTION,
-%
-%    %% validate Json
-%    true = jsx:is_json(SomeJson),
-%
-%    Body = SomeJson,
-%
-%    Options = #{},
-%
-%    %% send json command to openc2
-%    %%lager:info("about to send json to openc2"),
-%    {ok, Response} = gun:post(Conn, "/openc2", Headers, Body, Options),
-%    lager:info("sent json, got: ~p", [Response] ),
-%
-%    %% verify got 400 (bad request) for status code
-%    #{ status_code := 400 } = Response,
-%    %%lager:info("status = ~p", [RespStatus]),
-%
-%    #{ headers := RespHeaders} = Response,
-%    %%lager:info("headers = ~p", [RespHeaders]),
-%    #{ body := RespBody } = Response,
-%    lager:info("body = ~p", [RespBody]),
-%
-%    %% test header contents are correct
-%    { <<"server">>, <<"Cowboy">>} =  lists:keyfind( <<"server">>
-%                                                  , 1
-%                                                  , RespHeaders
-%                                                  ),
-%    { <<"date">>, _Date } =  lists:keyfind(<<"date">>, 1, RespHeaders),
-%    %% note content length is for error mesg "Missing action function"
-%    { <<"content-length">>, <<"14">>} =  lists:keyfind( <<"content-length">>
-%                                                      , 1
-%                                                      , RespHeaders
-%                                                      ),
-%    %% not sure why error response is in html?
-%    { <<"content-type">>, <<"text/html">>} =  lists:keyfind( <<"content-type">>
-%                                                           , 1
-%                                                           , RespHeaders
-%                                                           ),
-%
-%    %% test body is what was expected
-%    RespBody = <<"Missing action">>,
-%
-%    ok.
-%
+test_missing_action(_Config) ->
+    %% test proper reponse to bad input (missing action)
+
+    MyPort = application:get_env(haha, port, 8080),
+    {ok, ConnPid} = gun:open("localhost", MyPort),
+    Headers = [ {<<"content-type">>, <<"application/json">>} ],
+
+    %% leave out action
+    ErlJson = [ {<<"id">>,<<"0">>}
+              ,{<<"target">>,<<"whatareyou">>}
+              ],
+    Body = jsx:encode(ErlJson),
+
+    %% send json command to openc2
+    StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
+
+    %% check reply
+    Response = gun:await(ConnPid,StreamRef),
+    lager:info("test_missing_action:Response= ~p", [Response]),
+
+    %% Check contents of reply
+    response = element(1,Response),
+    nofin = element(2, Response),
+    Status = element(3,Response),
+    ExpectedStatus = 400,
+    ExpectedStatus = Status,
+
+    RespHeaders = element(4,Response),
+    true = lists:member({<<"content-length">>,<<"14">>},RespHeaders),
+    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
+
+    %% get the body of the reply (which has error msg)
+    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
+
+    lager:info("test_bad_json:RespBody= ~p", [RespBody]),
+
+    %% test body is what was expected
+    <<"Missing action">> = RespBody,
+
+    ok.
+
+
 %test_missing_target(_Config) ->
 %    %% test proper reponse to bad input (missing target)
 %
