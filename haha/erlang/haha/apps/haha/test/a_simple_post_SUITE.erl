@@ -42,20 +42,12 @@
          , test_bad_json/1
          , test_bad_action/1
          , test_missing_action/1
-%         , test_missing_target/1
+         , test_missing_target/1
          , test_post/1
-%         , send_recieve/5
          ]).
 
 %% required for common_test to work
 -include_lib("common_test/include/ct.hrl").
-
-%% JSON for input tests
-%%-include_lib("./include/mitigate01.hrl").
-%%-include_lib("./include/nonsense_action.hrl").
-%%-include_lib("./include/bad_json.hrl").
-%%-include_lib("./include/missing_action.hrl").
-%%-include_lib("./include/mitigate_wo_target.hrl").
 
 %% tests to run
 all() ->
@@ -66,7 +58,7 @@ all() ->
     , test_missing_action
     , test_post
     , test_bad_action
-%    , test_missing_target
+    , test_missing_target
     ].
 
 %% timeout if no reply in a minute
@@ -128,7 +120,7 @@ test_post(_Config) ->
     %% get the body of the reply (which has error msg)
     {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
 
-    lager:info("test_bad_json:RespBody= ~p", [RespBody]),
+    lager:info("test_post:RespBody= ~p", [RespBody]),
 
     %% test body is what was expected
     <<"\"Hello World\"">> = RespBody,
@@ -190,7 +182,7 @@ test_post_missing_body(_Config) ->
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"18">>},RespHeaders),
+    true = lists:member({<<"content-length">>,<<"19">>},RespHeaders),
     true = lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
 
     %% get the body of the reply (which has error msg)
@@ -199,7 +191,7 @@ test_post_missing_body(_Config) ->
     lager:info("test_post_missing_body:RespBody= ~p", [RespBody]),
 
     %% test body is what was expected
-    <<"Missing http body.">> = RespBody,
+    <<"\"Missing http body\"">> = RespBody,
 
     ok.
 
@@ -263,7 +255,8 @@ test_bad_json(_Config) ->
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"8">>},RespHeaders),
+    %% forcefail = Response,  %% use for debuggingh
+    true = lists:member({<<"content-length">>,<<"20">>},RespHeaders),
     true = lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
 
     %% get the body of the reply (which has error msg)
@@ -272,7 +265,7 @@ test_bad_json(_Config) ->
     lager:info("test_bad_json:RespBody= ~p", [RespBody]),
 
     %% test body is what was expected
-    <<"Bad JSON">> = RespBody,
+    <<"\"Can not parse JSON\"">> = RespBody,
 
     ok.
 
@@ -345,7 +338,7 @@ test_missing_action(_Config) ->
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"14">>},RespHeaders),
+    true = lists:member({<<"content-length">>,<<"23">>},RespHeaders),
     true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
 
     %% get the body of the reply (which has error msg)
@@ -354,104 +347,48 @@ test_missing_action(_Config) ->
     lager:info("test_bad_json:RespBody= ~p", [RespBody]),
 
     %% test body is what was expected
-    <<"Missing action">> = RespBody,
+    <<"mising command action">> = RespBody,
 
     ok.
 
 
-%test_missing_target(_Config) ->
-%    %% test proper reponse to bad input (missing target)
-%
-%    MyPort = application:get_env(haha, port, 8080),
-%    {ok, Conn} = gun:open("localhost", MyPort),
-%    Headers = [ {<<"content-type">>, <<"application/json">>} ],
-%
-%    %% give an invalid action
-%    SomeJson = ?MITIGATEWOTARGET,
-%
-%    %% validate Json
-%    true = jsx:is_json(SomeJson),
-%
-%    Body = SomeJson,
-%
-%    Options = #{},
-%
-%    %% send json command to openc2
-%    %%lager:info("about to send json to openc2"),
-%    {ok, Response} = gun:post(Conn, "/openc2", Headers, Body, Options),
-%    lager:info("sent json, got: ~p", [Response] ),
-%
-%    %% verify got 400 (bad request) for status code
-%    #{ status_code := 400 } = Response,
-%    %%lager:info("status = ~p", [RespStatus]),
-%
-%    #{ headers := RespHeaders} = Response,
-%    %%lager:info("headers = ~p", [RespHeaders]),
-%    #{ body := RespBody } = Response,
-%    lager:info("body = ~p", [RespBody]),
-%
-%    %% test header contents are correct
-%    { <<"server">>, <<"Cowboy">>} =  lists:keyfind( <<"server">>
-%                                                  , 1
-%                                                  , RespHeaders
-%                                                  ),
-%    { <<"date">>, _Date } =  lists:keyfind(<<"date">>, 1, RespHeaders),
-%    %% note content length is for error mesg "Missing action function"
-%    { <<"content-length">>, <<"19">>} =  lists:keyfind( <<"content-length">>
-%                                                      , 1
-%                                                      , RespHeaders
-%                                                      ),
-%    %% not sure why error response is in html?
-%    { <<"content-type">>, <<"text/html">>} =  lists:keyfind( <<"content-type">>
-%                                                           , 1
-%                                                           , RespHeaders
-%                                                           ),
-%
-%    %% test body is what was expected
-%    RespBody = <<"No Target Specified">>,
-%
-%    ok.
+test_missing_target(_Config) ->
+    %% test proper reponse to bad input (missing target)
 
-%%%%%%%%%%%%%%%%%%%% Utilities
+    MyPort = application:get_env(haha, port, 8080),
+    {ok, ConnPid} = gun:open("localhost", MyPort),
+    Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
-%% utility to save putting this in each test
-%send_recieve( Headers          % to send
-%            , Options          % to send
-%            , Url              % to send
-%            , ExpectedStatus  % test get this received
-%            , ExpectedBody
-%            ) ->
-%
-%    MyPort = application:get_env(haha, port, 8080),
-%    %%lager:info("test_post:port= ~p", [MyPort]),
-%    {ok, Conn} = gun:open("localhost", MyPort),
-%    {ok, Response} = gun:get(Conn, Url, Headers, Options),
-%    %%lager:info("response = ~p", [Response]),
-%
-%    %% get status code of response
-%    #{ status_code := RespStatus } = Response,
-%    %%lager:info("status = ~p", [RespStatus]),
-%    %% test what received was what was expected
-%    ExpectedStatus = RespStatus,
-%
-%    %% get headers
-%    #{ headers := RespHeaders } = Response,
-%    %%lager:info("headers = ~p", [RespHeaders]),
-%
-%    %% verify headers
-%    { <<"server">>, <<"Cowboy">>} =  lists:keyfind( <<"server">>
-%                                                  , 1
-%                                                  , RespHeaders
-%                                                  ),
-%    { <<"date">>, _Date } =  lists:keyfind( <<"date">>
-%                                          , 1
-%                                          , RespHeaders
-%                                          ),
-%
-%
-%    %% check if has body and if it is correct
-%    #{ body := RespBody } = Response,
-%    ExpectedBody = RespBody,
-%
-%    %% return
-%    ok.
+    ErlJson = [ {<<"id">>,<<"0">>}
+              ,{<<"action">>,<<"query">>}
+              ],
+
+    Body = jsx:encode(ErlJson),
+
+    %% send json command to openc2
+    StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
+
+    %% check reply
+    Response = gun:await(ConnPid,StreamRef),
+    lager:info("test_missing_target:Response= ~p", [Response]),
+
+    %% Check contents of reply
+    response = element(1,Response),
+    nofin = element(2, Response),
+    Status = element(3,Response),
+    ExpectedStatus = 400,
+    ExpectedStatus = Status,
+
+    RespHeaders = element(4,Response),
+    true = lists:member({<<"content-length">>,<<"14">>},RespHeaders),
+    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
+
+    %% get the body of the reply (which has error msg)
+    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
+
+    lager:info("test_missing_target:RespBody= ~p", [RespBody]),
+
+    %% test body is what was expected
+    <<"Missing target">> = RespBody,
+
+    ok.
