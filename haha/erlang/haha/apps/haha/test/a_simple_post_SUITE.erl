@@ -297,7 +297,7 @@ test_bad_action(_Config) ->
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"10">>},RespHeaders),
+    true = lists:member({<<"content-length">>,<<"16">>},RespHeaders),
     true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
 
     %% get the body of the reply (which has error msg)
@@ -306,7 +306,7 @@ test_bad_action(_Config) ->
     lager:info("test_bad_json:RespBody= ~p", [RespBody]),
 
     %% test body is what was expected
-    <<"Bad Action">> = RespBody,
+    <<"\"unknown action\"">> = RespBody,
 
     ok.
 
@@ -338,7 +338,7 @@ test_missing_action(_Config) ->
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"23">>},RespHeaders),
+    true = lists:member({<<"content-length">>,<<"24">>},RespHeaders),
     true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
 
     %% get the body of the reply (which has error msg)
@@ -347,7 +347,7 @@ test_missing_action(_Config) ->
     lager:info("test_bad_json:RespBody= ~p", [RespBody]),
 
     %% test body is what was expected
-    <<"mising command action">> = RespBody,
+    <<"\"missing command action\"">> = RespBody,
 
     ok.
 
@@ -380,7 +380,8 @@ test_missing_target(_Config) ->
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"14">>},RespHeaders),
+    %%true = Response,  %% for debugging
+    true = lists:member({<<"content-length">>,<<"24">>},RespHeaders),
     true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
 
     %% get the body of the reply (which has error msg)
@@ -389,6 +390,6 @@ test_missing_target(_Config) ->
     lager:info("test_missing_target:RespBody= ~p", [RespBody]),
 
     %% test body is what was expected
-    <<"Missing target">> = RespBody,
+    <<"\"missing command target\"">> = RespBody,
 
     ok.
