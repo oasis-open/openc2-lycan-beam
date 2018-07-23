@@ -84,13 +84,7 @@ process_json(Req, State0) ->
                 lager:info("process_json success"),
                 Results
     catch
-        throw:bad_json -> {400, <<"can not parse json">>, Req, State0};
-        throw:no_cmd_id -> {400, <<"mising command id">>, Req, State0};
-        throw:no_cmd_action -> {400, <<"mising command action">>, Req, State0};
-        throw:no_cmd_target -> {400, <<"mising command target">>, Req, State0};
-        throw:cmd_extra -> {400, <<"command has unknown commands">>, Req, State0};
-        throw:placeholder -> {400, <<"command has unknown commands">>, Req, State0}
-%        _:_ -> {400, <<"error processing json">>, Req, State0}
+        _:_ -> {400, <<"error processing json">>, Req, State0}
     end.
 
 check_body(Req0, State0) ->
@@ -140,62 +134,72 @@ check_body(Req0, State0) ->
     %%     and validate id/action/target are present and no others
     TopFields = maps:keys(JsonMap),
     lager:info("top level fields ~p", [TopFields] ),
+    %% check if id present, error if not, continue on if present
     case lists:member(<<"id">>, TopFields) of
         false ->
-          lager:info("run_command: command missing id"),
-          throw(no_cmd_id)
-    end,
+          lager:info("has_id: command missing id"),
+          {400, <<"missing command id">>, Req1, State1};
+        true ->
+          lager:info("has_id: command missing id"),
+          has_action(TopFields, JsonMap, Req1, State2)
+    end.
+
+  has_action(TopFields, JsonMap, Req1, State1) ->
+    %% check if action present, error if not, continue on if present
     case lists:member(<<"action">>, TopFields) of
         false ->
-          lager:info("run_command: command missing action"),
-          throw(no_cmd_action)
-    end,
+          lager:info("has_action: command missing action"),
+          {400, <<"missing command action">>, Req1, State1};
+        true ->
+          lager:info("has_action: has action"),
+          has_target(TopFields, JsonMap, Req1, State1)
+    end.
+
+  has_target(TopFields, JsonMap, Req1, State1) ->
     case lists:member(<<"target">>, TopFields) of
         false ->
-          lager:info("run_command: command missing target"),
-          throw(no_cmd_target)
-    end,
+          lager:info("has_target: command missing target"),
+          {400, <<"missing command target">>, Req1, State1};
+        true ->
+          lager:info("has_target passed"),
+          has_extra(TopFields, JsonMap, Req1, State1)
+    end.
+
+has_extra(TopFields, JsonMap, Req1, State1) ->
+    %% check if extra top level fields
     case length(TopFields) of
         3 ->
+          lager:info("run_command: command has correct # fields"),
+          %% correct number so continue on
+          check_action( JsonMap, Req1, State1);
+        _ ->
           lager:info("run_command: command has extra fields"),
-          throw(cmd_extra)
-    end,
+          {400, <<"command has unknown extra fields">>, Req1, State1}
+    end.
 
 
-%%%%%%%%%% still working here
-    Result = structure_check( true  % IdKeyExists
-               , true  % ActionKeyExists
-               , true  % TargetKeyExists
-               , false % LeftoverExists
-               , Req1
-               , State2
-               ),
-    lager:info("run_command: Result ~p", [Result]),
-    Req = Req1,
-    {200, <<"fix this">>, Req, State2}.
-
-
-%% structure_check finds badly formed (for this actuator) commands
 %% passed structure checks
-structure_check( true  % IdKeyExists
-               , true  % ActionKeyExists
-               , true  % TargetKeyExists
-               , false % LeftoverExists
-               , Req
-               , State
-               ) ->
+check_action(JsonMap, Req1, State1) ->
     lager:info("passed structure checks"),
     %% check for correct action (query)
-    JsonMap = maps:get(json_map, State),
     ActionBin = maps:get( <<"action">>, JsonMap ),
     lager:info("ActionBin ~p", [ActionBin]),
+    case ActionBin of
+        %% if query, continue otherwise error
+        <<"query">> ->
+            check_target(JsonMap, Req1, State1);
+        _ ->
+            {400, <<"unknown action">>, Req1, State1}
+    end.
+
+check_target(JsonMap, Req, State) ->
     TargetBin = maps:get( <<"target">>, JsonMap ),
     lager:info("TargetBin ~p", [TargetBin]),
     %% parse the type of target so can select on it
     %%  TargetInfo = { TargetIsBinary, TargetIsMap, TopTarget, SpecifierList}
     TargetInfo = target_typing(TargetBin),
     lager:info("sc: TargetInfo = ~p", [TargetInfo]),
-    query_check(ActionBin, TargetInfo, Req, State).
+    query_check(TargetInfo, Req, State).
 
 target_typing(TargetBin) ->
     TargetIsBinary = is_binary(TargetBin),
@@ -235,7 +239,7 @@ string_map(false, false, _) ->
 %%    TargetInfo = {TargetIsBinary, TargetIsMap, TopTarget, SpecifierList}
 %%
 %% case where ActionBin=query, TargetIsBinary=true, target= whatareyou
-query_check(<<"query">>, {true, false, <<"whatareyou">>, []}, Req, State) ->
+query_check({true, false, <<"whatareyou">>, []}, Req, State) ->
     %% query action, whatareyou target
     %%figure out good reply;
     HelloWorld = <<"Hello World">>,
@@ -250,7 +254,7 @@ query_check(<<"query">>, {true, false, <<"whatareyou">>, []}, Req, State) ->
 
 %% case where ActionBin=query, TargetIsBinary=true, target= openc2,
 %%     with no target specifiers (do return all)
-query_check(<<"query">>, {true, false, <<"openc2">>, []}, Req, State) ->
+query_check({true, false, <<"openc2">>, []}, Req, State) ->
     %% figure out
     HelloWorld = <<"Need to figure out openc2=all still">>,
     OuputJson = jiffy:encode(HelloWorld),
@@ -264,7 +268,7 @@ query_check(<<"query">>, {true, false, <<"openc2">>, []}, Req, State) ->
 
 %% case where ActionBin=query, TargetIsMap=true, target= openc2,
 %%     with target specifiers
-query_check(<<"query">>, {false, true, <<"openc2">>, SpecList}, Req, State) ->
+query_check({false, true, <<"openc2">>, SpecList}, Req, State) ->
   %% figure out
   lager:info("query_check SpecList ~p", [SpecList]),
   {HtmlCode, OutputJson} = case process_spec_list(SpecList, #{}) of
@@ -283,23 +287,12 @@ query_check(<<"query">>, {false, true, <<"openc2">>, SpecList}, Req, State) ->
   lager:info("query_check openc2 map"),
   {true, Req2, State};
 
-query_check(<<"query">>, _Target, Req, State) ->
+query_check(_Target, Req, State) ->
     %% Bad target
     ErrorMsg = <<"Bad Target">>,
     Req2 = cowboy_req:reply( 400
                            , #{<<"content-type">> => <<"text/html">>}
                            , ErrorMsg
-                           , Req
-                           ),
-    %% return (don't move on since request was bad)
-    %%   is this correct return tuple?
-    {ok, Req2, State};
-
-query_check(_Action, _Target, Req, State) ->
-    %% bad action
-    Req2 = cowboy_req:reply( 400
-                           , #{<<"content-type">> => <<"text/html">>}
-                           , <<"Bad Action">>
                            , Req
                            ),
     %% return (don't move on since request was bad)
