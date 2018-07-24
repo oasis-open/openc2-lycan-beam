@@ -173,6 +173,7 @@ has_extra(TopFields, JsonMap, Req1, State1) ->
           %% correct number so continue on
           check_action( JsonMap, Req1, State1);
         _ ->
+          %% wrong number so return error
           lager:info("run_command: command has extra fields"),
           {400, <<"command has unknown extra fields">>, Req1, State1}
     end.
@@ -318,7 +319,7 @@ process_spec_list([H | T], Output) ->
 %% output_spec creates output for a particular specifiers
 output_spec(<<"profile">>, Output) ->
     %% return new output map with profile information
-    Url = <<"get url from config and put here">>,
+    Url = <<"https://github.com/sparrell/openc2-cap/haha.cap.md">>,
     { ok, maps:put(<<"x_haha">>, Url, Output) };
 
 output_spec(<<"schema">>, Output) ->

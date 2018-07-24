@@ -92,12 +92,7 @@ test_post(_Config) ->
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
-    ErlJson = [ {<<"id">>,<<"0">>}
-              ,{<<"action">>,<<"query">>}
-              ,{<<"target">>,<<"whatareyou">>}
-              ],
-
-    Body = jsx:encode(ErlJson),
+    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"query\",\"target\":\"whatareyou\"}">>,
 
     %% send json command to openc2
     StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
@@ -237,9 +232,6 @@ test_bad_json(_Config) ->
 
     BadJson = "{]}",
 
-    %% validate Json is bad
-    false = jsx:is_json(BadJson),
-
     %% send json command to openc2
     StreamRef = gun:post(ConnPid, "/openc2", Headers, BadJson),
 
@@ -276,11 +268,9 @@ test_bad_action(_Config) ->
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
-    ErlJson = [ {<<"id">>,<<"0">>}
-              ,{<<"action">>,<<"whiskytangofoxtrox">>}
-              ,{<<"target">>,<<"whatareyou">>}
-              ],
-    Body = jsx:encode(ErlJson),
+    %% test JSON has bad action
+    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"whiskytangofoxtrox\",\"target\":\"whatareyou\"}">>,
+
 
     %% send json command to openc2
     StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
@@ -317,11 +307,8 @@ test_missing_action(_Config) ->
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
-    %% leave out action
-    ErlJson = [ {<<"id">>,<<"0">>}
-              ,{<<"target">>,<<"whatareyou">>}
-              ],
-    Body = jsx:encode(ErlJson),
+    %% test JSON is missing action
+    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"target\":\"whatareyou\"}">>,
 
     %% send json command to openc2
     StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
@@ -359,11 +346,8 @@ test_missing_target(_Config) ->
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
-    ErlJson = [ {<<"id">>,<<"0">>}
-              ,{<<"action">>,<<"query">>}
-              ],
-
-    Body = jsx:encode(ErlJson),
+    %% JSON is missing target
+    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"query\"}">>,
 
     %% send json command to openc2
     StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
