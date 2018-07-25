@@ -84,7 +84,7 @@ process_json(Req, State0) ->
                 lager:info("process_json success"),
                 Results
     catch
-        _:_ -> {400, <<"error processing json">>, Req, State0}
+        _:_ -> {400, <<"error processing json command">>, Req, State0}
     end.
 
 check_body(Req0, State0) ->
@@ -251,6 +251,7 @@ query_check({true, false, <<"whatareyou">>, []}, Req, State) ->
                            , Req
                            ),
     lager:info("query_check whatareyou"),
+    lager:info("ToDO fix query_check to new scheme"),
     {true, Req2, State};
 
 %% case where ActionBin=query, TargetIsBinary=true, target= openc2,
@@ -303,6 +304,7 @@ query_check(_Target, Req, State) ->
 %% process_spec_list(SpecList, Output) creates output depending on specifiers
 process_spec_list([], Output) ->
     %% spec list now empty so done
+    lager:info("process_spec complete Output ~p", [Output]),
     {ok, Output};
 process_spec_list([H | T], Output) ->
       %% recurse thru specs creating output
@@ -324,8 +326,42 @@ output_spec(<<"profile">>, Output) ->
 
 output_spec(<<"schema">>, Output) ->
   %% return new output map with schema information
-  Schema = <<"figure out how to put schema here">>,
-  { ok, maps:put(<<"schema">>, Schema, Output) };
+  %Schema = <<"figure out how to put schema here">>,
+  lager:info("output_spec about to get filename"),
+  case code:priv_dir(haha) of
+        {error, bad_name} ->
+            % This occurs when not running as a release; e.g., erl -pa ebin
+            % Of course, this will not work for all cases, but should account
+            % for most
+            PrivDir = "priv";
+        PrivDir ->
+            % In this case, we are running in a release and the VM knows
+            % where the application (and thus the priv directory) resides
+            % on the file system
+            ok
+  end,
+  lager:info("output_spec about to read file"),
+  case file:read_file(filename:join([PrivDir, "haha.jadn"])) of
+    {ok, Schema} ->
+        lager:info("output_spec read file ok ~p", [Schema]),
+        ok;
+    AnyThingElse ->
+        lager:info("output_spec trouble reading file ~p", [AnyThingElse]),
+        Schema = "oops"
+  end,
+  lager:info("output_spec schema: ~p", [Schema]),
+  %% convert json text to erlang terms to put in map
+  SchemaMap = jiffy:decode(Schema),
+  lager:info("output_spec schemamap: ~p", [SchemaMap]),
+  lager:info("output_spec preOutput: ~p", [Output]),
+  NewOutput = maps:put(<<"schema">>, SchemaMap, Output),
+  lager:info("output_spec NewOutput: ~p", [NewOutput]),
+  { ok, maps:put(<<"schema">>, SchemaMap, Output) };
+
+output_spec(<<"version">>, Output) ->
+  %% return new output map with schema information
+  Version = <<"1.0">>,
+  { ok, maps:put(<<"version">>, Version, Output) };
 
 output_spec(_, _) ->
   %% unknown specifier
