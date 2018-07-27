@@ -200,7 +200,35 @@ check_target(JsonMap, Req, State) ->
     %%  TargetInfo = { TargetIsBinary, TargetIsMap, TopTarget, SpecifierList}
     TargetInfo = target_typing(TargetBin),
     lager:info("sc: TargetInfo = ~p", [TargetInfo]),
-    query_check(TargetInfo, Req, State).
+
+    case TargetInfo of
+        {true, false, <<"Hello World">>, _} ->
+            %% valid Hello World
+            {200, <<"Hello World">>, Req, State};
+        {true, false, <<"openc2">>, _} ->
+            %% valid open2 all - same as full list of specifiers
+            %% fix this later so not hardcoded list
+            lager:info("ToDo: fix so no target specs is not hard coded list"),
+            AllSpecs = [<<"profile">>, <<"version">>, <<"schema">>],
+            process_spec(AllSpecs, Req, State);
+        {true, false, Target, _} ->
+            %% invalid target
+            lager:info("check_target bad target ~p", [Target]),
+            {400, <<"Invalid Target">>, Req, State};
+        {false, true, error, ErrorMsg} ->
+            %% return error encountered
+            lager:info("check_target error parsing specs"),
+            {400, ErrorMsg, Req, State};
+        {false, true, <<"openc2">>, SpecifierList} ->
+            %% valid so far
+            lager:info("check_target SpecList ~p", [SpecifierList]),
+            %% continue on to process SpecifierList
+            process_spec(SpecifierList, Req, State);
+        {_, _, _, _} ->
+            lager:info("check_target error _,_,_,_"),
+            %% return error
+            {400, <<"Invalid Target">>, Req, State}
+    end.
 
 target_typing(TargetBin) ->
     TargetIsBinary = is_binary(TargetBin),
@@ -235,71 +263,17 @@ string_map(false, false, _) ->
     %% bad target value since neither string nor map
     {error, ["bad target json"]}.
 
-%% query_check
-%%  query_check(ActionBin, TargetInfo, Req, State)
-%%    TargetInfo = {TargetIsBinary, TargetIsMap, TopTarget, SpecifierList}
-%%
-%% case where ActionBin=query, TargetIsBinary=true, target= whatareyou
-query_check({true, false, <<"whatareyou">>, []}, Req, State) ->
-    %% query action, whatareyou target
-    %%figure out good reply;
-    HelloWorld = <<"Hello World">>,
-    OuputJson = jiffy:encode(HelloWorld),
-    Req2 = cowboy_req:reply( 200
-                           , #{<<"content-type">> => <<"application/json">>}
-                           , OuputJson
-                           , Req
-                           ),
-    lager:info("query_check whatareyou"),
-    lager:info("ToDO fix query_check to new scheme"),
-    {true, Req2, State};
+process_spec(SpecifierList, Req, State) ->
+    lager:info("process_spec SpecList ~p", [SpecifierList]),
 
-%% case where ActionBin=query, TargetIsBinary=true, target= openc2,
-%%     with no target specifiers (do return all)
-query_check({true, false, <<"openc2">>, []}, Req, State) ->
-    %% figure out
-    HelloWorld = <<"Need to figure out openc2=all still">>,
-    OuputJson = jiffy:encode(HelloWorld),
-    Req2 = cowboy_req:reply( 200
-                           , #{<<"content-type">> => <<"application/json">>}
-                           , OuputJson
-                           , Req
-                           ),
-    lager:info("query_check openc2 binary"),
-    {true, Req2, State};
-
-%% case where ActionBin=query, TargetIsMap=true, target= openc2,
-%%     with target specifiers
-query_check({false, true, <<"openc2">>, SpecList}, Req, State) ->
-  %% figure out
-  lager:info("query_check SpecList ~p", [SpecList]),
-  {HtmlCode, OutputJson} = case process_spec_list(SpecList, #{}) of
-      {error, _ErrorMsg} ->
-          {400, jiffy:encode(<<"Problem with Target Specifiers">>)};
-      {ok, Output} ->
-          lager:info("query_check output ~p", [Output]),
-          {200, jiffy:encode(Output)}
-      end,
-
-  Req2 = cowboy_req:reply( HtmlCode
-                         , #{<<"content-type">> => <<"application/json">>}
-                         , OutputJson
-                         , Req
-                         ),
-  lager:info("query_check openc2 map"),
-  {true, Req2, State};
-
-query_check(_Target, Req, State) ->
-    %% Bad target
-    ErrorMsg = <<"Bad Target">>,
-    Req2 = cowboy_req:reply( 400
-                           , #{<<"content-type">> => <<"text/html">>}
-                           , ErrorMsg
-                           , Req
-                           ),
-    %% return (don't move on since request was bad)
-    %%   is this correct return tuple?
-    {ok, Req2, State}.
+    case process_spec_list(SpecifierList, #{}) of
+        {error, ErrorMsg} ->
+            lager:info("process_spec error ~p", [ErrorMsg]),
+            {400, <<"Problem with Target Specifiers">>, Req, State};
+        {ok, Output} ->
+            lager:info("process_spec output ~p", [Output]),
+            {200, Output, Req, State}
+        end.
 
 %% process_spec_list(SpecList, Output) creates output depending on specifiers
 process_spec_list([], Output) ->

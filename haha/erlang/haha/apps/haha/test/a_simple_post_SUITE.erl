@@ -92,7 +92,7 @@ test_post(_Config) ->
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
-    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"query\",\"target\":\"whatareyou\"}">>,
+    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"query\",\"target\":\"Hello World\"}">>,
 
     %% send json command to openc2
     StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
@@ -269,7 +269,7 @@ test_bad_action(_Config) ->
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
     %% test JSON has bad action
-    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"whiskytangofoxtrox\",\"target\":\"whatareyou\"}">>,
+    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"whiskytangofoxtrox\",\"target\":\"Hello World\"}">>,
 
 
     %% send json command to openc2
@@ -308,7 +308,7 @@ test_missing_action(_Config) ->
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
     %% test JSON is missing action
-    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"target\":\"whatareyou\"}">>,
+    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"target\":\"Hello World\"}">>,
 
     %% send json command to openc2
     StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),

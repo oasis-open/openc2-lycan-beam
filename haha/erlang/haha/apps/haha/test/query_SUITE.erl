@@ -84,7 +84,7 @@ test_query_whatareyou(_Config) ->
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
-    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"query\",\"target\":\"whatareyou\"}">>,
+    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"query\",\"target\":\"Hello World\"}">>,
 
     %% send json command to openc2
     StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
