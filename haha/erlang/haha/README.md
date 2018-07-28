@@ -37,12 +37,21 @@ Run
 
 Design
 -----
-
+blah blah
 
 ![sunny1](../pics/01.sunny.hello.1.png)
 
+blah blah
+
 ![sunny2](../pics/02.sunny.hello.2.png)
 
-![sunny3](../pics/03.sunny.query.1.png)
+blah blah
+note query Hello and query openc2 follow same path
 
-![sunny4](../pics/04.sunny.query.2.png)
+![rainy01](../pics/05.rainy.01.png)
+
+blah blah
+
+![rainy02](../pics/06.rainy.02.png)
+
+blah blah
