@@ -37,7 +37,21 @@ Run
 
 Design
 -----
-blah blah
+The flow thru the functions will be shown both sunny day and rainy day.
+
+Sunny Day flow
+-----
+Figures 1 & 2 show the flow thru the modules for either of the following OpenC2 commands. Note much of the movement between functions it tail recursive.
+
+Hello World
+```json
+put stuff here
+```
+
+query openc2
+```json
+put stuff here
+```
 
 ![sunny1](../pics/01.sunny.hello.1.png)
 
@@ -47,6 +61,10 @@ blah blah
 
 blah blah
 note query Hello and query openc2 follow same path
+
+Rainy Day flows
+-----
+Several error paths will be followed
 
 ![rainy01](../pics/05.rainy.01.png)
 
