@@ -1,11 +1,11 @@
 haha
 =====
 
-An OTP application implementing the Https Api Hello-world Acutator (HAHA or haha). 
+An OTP application implementing the Https Api Hello-world Acutator (HAHA or haha).
 This is a typical "Hello World" in that it does not provide any real security functions.
 It is a simple getting-started of a very simple OpenC2 consumer interface.
 
-Haha has a very simple OpenC2 interface. 
+Haha has a very simple OpenC2 interface.
 The only OpenC2 action that haha accepts
 is the query action with either the _openc2_ target (returns the profile or the schema)
 or the _hello_ target (an custom extension to OpenC2) (returns "World").
@@ -34,3 +34,15 @@ Run
 -----
 
     $ whatever (not ready yet)
+
+Design
+-----
+
+
+![sunny1](../pics/01.sunny.hello.1.png)
+
+![sunny2](../pics/01.sunny.hello.2.png)
+
+![sunny3](../pics/01.sunny.query.1.png)
+
+![sunny4](../pics/01.sunny.query.2.png)
