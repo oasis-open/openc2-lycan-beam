@@ -334,10 +334,47 @@ Rainy Day flows
 -----
 Several error paths will be followed
 
+### Rainy Day - GET
+Only Post is supported (as Cowboy http server is instructed
+  per "allowed_methods").
+Figure 3 shows the error path.
 ![rainy01](../pics/05.rainy.01.png)
+Figure 3
 
-blah blah
+The response is:
+
+Status
+* 405 Method Not Allowed
+
+Headers:
+* allow →POST
+* content-length →0
+* date →Fri, 27 Jul 2018 15:54:28 GMT
+* server →Cowboy
+
+No Body
+
+### Rainy Day - non-json Content-Type
+The haha server only accepts json,
+so if a non-json content type is sent,
+cowboy returns unsupported media type.
 
 ![rainy02](../pics/06.rainy.02.png)
+Figure 4
 
-blah blah
+Status:
+* 415 Unsupported Media Type
+
+### Rainy Day -
+
+### Rainy Day -
+
+### Rainy Day -
+
+### Rainy Day -
+
+### Rainy Day -
+
+### Rainy Day -
+
+### Rainy Day -
