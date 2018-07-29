@@ -20,26 +20,26 @@ in haga (add link), the Https Api Global-welcome Actuator.
 
 Real actuators can be found at (add links for bawnl, etc).
 
-Build
+1. Build
 -----
 
     $ rebar3 compile
 
-Test
+2. Test
 -----
 
     $ rebar3 -ct
 
-Run
+3. Run
 -----
 
     $ whatever (not ready yet)
 
-Design
+4. Design
 -----
 The flow thru the functions will be shown both sunny day and rainy day.
 
-### Sunny Day flow - Hello World
+### 4.1 Sunny Day flow - Hello World
 Figures 1 & 2 show the flow thru the modules for the following OpenC2 command. Note much of the movement between functions it tail recursive.
 
 ```json
@@ -70,7 +70,7 @@ Headers:
 Body
 * "Hello World"
 
-### Sunny Day flow - query openc2
+### 4.2 Sunny Day flow - query openc2
 Figs 1 & 2 also represent the flow for the following command:
 
 ```json
@@ -330,11 +330,10 @@ Body
 }
 ```
 
-Rainy Day flows
------
-Several error paths will be followed
+Rainy Day flows -
+several error paths will be followed.
 
-### Rainy Day - GET
+### 4.3 Rainy Day - GET
 Only Post is supported (as Cowboy http server is instructed
   per "allowed_methods").
 Figure 3 shows the error path.
@@ -354,7 +353,7 @@ Headers:
 
 No Body
 
-### Rainy Day - non-json Content-Type
+### 4.4 Rainy Day - non-json Content-Type
 The haha server only accepts json,
 so if a non-json content type is sent,
 cowboy returns unsupported media type.
@@ -365,16 +364,49 @@ Figure 4
 Status:
 * 415 Unsupported Media Type
 
-### Rainy Day -
+### 4.5 Rainy Day -
 
-### Rainy Day -
+![rainy03](../pics/07.rainy.03.png)
+Figure 5
 
-### Rainy Day -
+### 4.6 Rainy Day -
 
-### Rainy Day -
+![rainy04](../pics/08.rainy.04.png)
+Figure 6
 
-### Rainy Day -
+### 4.7 Rainy Day -
 
-### Rainy Day -
+![rainy05](../pics/09.rainy.05.png)
+Figure 7
 
-### Rainy Day -
+### 4.8 Rainy Day -
+
+![rainy06](../pics/10.rainy.06.png)
+Figure 8
+
+### 4.9 Rainy Day -
+
+![rainy07](../pics/11.rainy.07.png)
+Figure 9
+
+### 4.10 Rainy Day -
+
+![rainy08](../pics/12.rainy.08.png)
+Figure 10
+
+### 4.11 Rainy Day -
+
+![rainy09](../pics/13.rainy.09.png)
+Figure 11
+
+
+### 4.11 Rainy Day -
+
+![rainy10](../pics/14.rainy.10.png)
+Figure 12
+
+
+### 4.11 Rainy Day -
+
+![rainy11](../pics/15.rainy.11.png)
+Figure 13
