@@ -383,9 +383,9 @@ If invalid json (eg command below) is sent, 400 "can not parse json" is returned
 
 ```json
 {
-    “id” :  ,
-    "action": ”query",
-    "target": ”Hello World”
+]"id": "0b4153de-03e1-4008-a071-0b2b23e20723",
+"action": "query",
+"target": "Hello World"
 }
 ```
 
@@ -393,39 +393,57 @@ If invalid json (eg command below) is sent, 400 "can not parse json" is returned
 
 Figure 7
 
-### 4.8 Rainy Day -
+### 4.8 Rainy Day - Missing Command Id
+Command ID is required for this actuator.
 
 ![rainy06](../pics/10.rainy.06.png)
 
 Figure 8
 
-### 4.9 Rainy Day -
+### 4.9 Rainy Day - Missing action
+An action is required.
 
 ![rainy07](../pics/11.rainy.07.png)
 
 Figure 9
 
-### 4.10 Rainy Day -
-
+### 4.10 Rainy Day - Missing Target
+A target is required.
 ![rainy08](../pics/12.rainy.08.png)
 
 Figure 10
 
-### 4.11 Rainy Day -
+### 4.11 Rainy Day - Extra fields
+Extra fields (ie other than Id, Action, Target)
+will cause this actuator to error.
+For example:
+
+```json
+{
+    “id” :  “1234”,
+    "action": ”query",
+    "target": ”Hello World”,
+    “args” : {“duration” : “3s”}
+}
+```
+
+Note args is allowed in OpenC2 but not for this actuator.
 
 ![rainy09](../pics/13.rainy.09.png)
 
 Figure 11
 
 
-### 4.12 Rainy Day -
+### 4.12 Rainy Day - Unknown action
+Only query is valid for this atuator.
 
 ![rainy10](../pics/14.rainy.10.png)
 
 Figure 12
 
 
-### 4.13 Rainy Day -
+### 4.13 Rainy Day - Target specifier errors
+Several error some from malformed or unknown specifiers
 
 ![rainy11](../pics/15.rainy.11.png)
 
