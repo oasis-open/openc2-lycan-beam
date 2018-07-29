@@ -1,5 +1,4 @@
-haha
-=====
+# haha
 
 An OTP application implementing the Https Api Hello-world Acutator (HAHA or haha).
 This is a typical "Hello World" in that it does not provide any real security functions.
@@ -20,23 +19,19 @@ in haga (add link), the Https Api Global-welcome Actuator.
 
 Real actuators can be found at (add links for bawnl, etc).
 
-1. Build
------
+## 1. Build
 
     $ rebar3 compile
 
-2. Test
------
+## 2. Test
 
     $ rebar3 -ct
 
-3. Run
------
+## 3. Run
 
     $ whatever (not ready yet)
 
-4. Design
------
+## 4. Design
 The flow thru the functions will be shown both sunny day and rainy day.
 
 ### 4.1 Sunny Day flow - Hello World
@@ -51,9 +46,11 @@ Figures 1 & 2 show the flow thru the modules for the following OpenC2 command. N
 ```
 
 ![sunny1](../pics/01.sunny.hello.1.png)
+
 Figure 1
 
 ![sunny2](../pics/02.sunny.hello.2.png)
+
 Figure 2
 
 The response will be:
@@ -337,7 +334,9 @@ several error paths will be followed.
 Only Post is supported (as Cowboy http server is instructed
   per "allowed_methods").
 Figure 3 shows the error path.
+
 ![rainy01](../pics/05.rainy.01.png)
+
 Figure 3
 
 The response is:
@@ -359,54 +358,75 @@ so if a non-json content type is sent,
 cowboy returns unsupported media type.
 
 ![rainy02](../pics/06.rainy.02.png)
+
 Figure 4
 
 Status:
 * 415 Unsupported Media Type
 
-### 4.5 Rainy Day -
+### 4.5 Rainy Day - JSON handling
+Figure 5 is common to all the remaining error flows.
 
 ![rainy03](../pics/07.rainy.03.png)
+
 Figure 5
 
-### 4.6 Rainy Day -
+### 4.6 Rainy Day - Missing Http Body
+If no body exists on the post, it returns 400 with the body "Missing Http Body"
 
 ![rainy04](../pics/08.rainy.04.png)
+
 Figure 6
 
-### 4.7 Rainy Day -
+### 4.7 Rainy Day - Invalid json
+If invalid json (eg command below) is sent, 400 "can not parse json" is returned
+
+```json
+{
+    “id” :  ,
+    "action": ”query",
+    "target": ”Hello World”
+}
+```
 
 ![rainy05](../pics/09.rainy.05.png)
+
 Figure 7
 
 ### 4.8 Rainy Day -
 
 ![rainy06](../pics/10.rainy.06.png)
+
 Figure 8
 
 ### 4.9 Rainy Day -
 
 ![rainy07](../pics/11.rainy.07.png)
+
 Figure 9
 
 ### 4.10 Rainy Day -
 
 ![rainy08](../pics/12.rainy.08.png)
+
 Figure 10
 
 ### 4.11 Rainy Day -
 
 ![rainy09](../pics/13.rainy.09.png)
+
 Figure 11
 
 
-### 4.11 Rainy Day -
+### 4.12 Rainy Day -
 
 ![rainy10](../pics/14.rainy.10.png)
+
 Figure 12
 
 
-### 4.11 Rainy Day -
+### 4.13 Rainy Day -
 
 ![rainy11](../pics/15.rainy.11.png)
+
 Figure 13
