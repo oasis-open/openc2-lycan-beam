@@ -170,23 +170,14 @@ test_post_missing_body(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
 
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"19">>},RespHeaders),
-    true = lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_post_missing_body:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"Missing http body\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.
 
@@ -241,23 +232,14 @@ test_bad_json(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
     %% forcefail = Response,  %% use for debuggingh
-    true = lists:member({<<"content-length">>,<<"20">>},RespHeaders),
-    true = lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_bad_json:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"Can not parse JSON\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.
 
@@ -281,22 +263,13 @@ test_bad_action(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"16">>},RespHeaders),
-    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_bad_json:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"unknown action\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.
 
@@ -319,22 +292,13 @@ test_missing_action(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"24">>},RespHeaders),
-    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_bad_json:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"missing command action\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.
 
@@ -358,22 +322,13 @@ test_missing_target(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
     %%true = Response,  %% for debugging
-    true = lists:member({<<"content-length">>,<<"24">>},RespHeaders),
-    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_missing_target:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"missing command target\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.

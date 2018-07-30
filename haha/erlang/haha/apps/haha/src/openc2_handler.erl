@@ -300,7 +300,6 @@ output_spec(<<"profile">>, Output) ->
 
 output_spec(<<"schema">>, Output) ->
   %% return new output map with schema information
-  %Schema = <<"figure out how to put schema here">>,
   lager:info("output_spec about to get filename"),
   case code:priv_dir(haha) of
         {error, bad_name} ->
