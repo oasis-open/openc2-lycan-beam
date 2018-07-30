@@ -74,11 +74,11 @@ init_per_suite(Config) ->
     %%lager:info("AppList2: ~p~n", [AppList2]),
 
     %% since ct doesn't read sys.config, set configs here
-    application:set_env(haha, port, 8080),
-    application:set_env(haha, listener_count, 5),
+    application:set_env(hahax1, port, 8080),
+    application:set_env(hahax1, listener_count, 5),
 
     %% start application
-    {ok, _AppList3} = application:ensure_all_started(haha),
+    {ok, _AppList3} = application:ensure_all_started(hahax1),
     %%lager:info("AppList3: ~p~n", [AppList3]),
 
     Config.
@@ -87,7 +87,7 @@ end_per_suite(Config) ->
     Config.
 
 test_post(_Config) ->
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(hahax1, port, 8080),
 
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
@@ -125,7 +125,7 @@ test_post(_Config) ->
 test_bad_method(_Config) ->
     %% test if send get when expecting post
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(hahax1, port, 8080),
     lager:info("test_bad_method"),
     {ok, Conn} = gun:open("localhost", MyPort),
 
@@ -155,7 +155,7 @@ test_bad_method(_Config) ->
 test_post_missing_body(_Config) ->
     %% test proper reponse to bad input (no body to html request)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(hahax1, port, 8080),
     lager:info("test_post_missing_body"),
     {ok, ConnPid} = gun:open("localhost", MyPort),
 
@@ -170,23 +170,14 @@ test_post_missing_body(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
 
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"19">>},RespHeaders),
-    true = lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_post_missing_body:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"Missing http body\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.
 
@@ -194,7 +185,7 @@ test_unsupported_media_type(_Config) ->
     %% test proper reponse to bad input
     %%     (html request has media type other than json)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(hahax1, port, 8080),
     lager:info("test_unsupported_media_type"),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"text/plain">>} ],
@@ -225,7 +216,7 @@ test_unsupported_media_type(_Config) ->
 test_bad_json(_Config) ->
     %% test proper reponse to bad input (unparseable json)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(hahax1, port, 8080),
     %%lager:info("test_bad_json:port= ~p", [MyPort]),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
@@ -241,30 +232,21 @@ test_bad_json(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
     %% forcefail = Response,  %% use for debuggingh
-    true = lists:member({<<"content-length">>,<<"20">>},RespHeaders),
-    true = lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_bad_json:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"Can not parse JSON\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.
 
 test_bad_action(_Config) ->
     %% test proper reponse to bad input (unrecognized action)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(hahax1, port, 8080),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
@@ -281,29 +263,20 @@ test_bad_action(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"16">>},RespHeaders),
-    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_bad_json:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"unknown action\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.
 
 test_missing_action(_Config) ->
     %% test proper reponse to bad input (missing action)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(hahax1, port, 8080),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
@@ -319,22 +292,13 @@ test_missing_action(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"24">>},RespHeaders),
-    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_bad_json:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"missing command action\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.
 
@@ -342,7 +306,7 @@ test_missing_action(_Config) ->
 test_missing_target(_Config) ->
     %% test proper reponse to bad input (missing target)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(hahax1, port, 8080),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
@@ -358,22 +322,13 @@ test_missing_target(_Config) ->
 
     %% Check contents of reply
     response = element(1,Response),
-    nofin = element(2, Response),
+    fin = element(2, Response),
     Status = element(3,Response),
-    ExpectedStatus = 400,
+    ExpectedStatus = 500,
     ExpectedStatus = Status,
 
     RespHeaders = element(4,Response),
     %%true = Response,  %% for debugging
-    true = lists:member({<<"content-length">>,<<"24">>},RespHeaders),
-    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_missing_target:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"missing command target\"">> = RespBody,
+    true = lists:member({<<"content-length">>,<<"0">>},RespHeaders),
 
     ok.

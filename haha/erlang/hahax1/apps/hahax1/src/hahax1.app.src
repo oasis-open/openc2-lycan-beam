@@ -24,11 +24,11 @@
 
 %%%-------------------------------------------------------------------
 
-{application, haha,
+{application, hahax1,
  [{description, "An OpenC2 'hello world' OTP application"},
   {vsn, "0.1.0"},
   {registered, []},
-  {mod, { haha_app, []}},
+  {mod, { hahax1_app, []}},
   {applications,
    [ kernel
    , stdlib
