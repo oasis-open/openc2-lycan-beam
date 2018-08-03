@@ -1,5 +1,5 @@
 %%% @author Duncan Sparrell
-%%% @copyright (C) 2017, sFractal Consulting LLC
+%%% @copyright (C) 2018, sFractal Consulting LLC
 %%%
 -module(openc2_handler).
 -author("Duncan Sparrell").
@@ -60,7 +60,6 @@ content_types_accepted(Req, State) ->
 handle_json(Req0, State0) ->
     lager:info("got to handle_json"),
     lager:info("handle_json state ~p", [State0]),
-    %%%%%%%%
     Results = process_json(Req0, State0),
     {HttpStatus, HttpErl, Req2, State2} = Results,
     lager:info("handle_json HttpStatus ~p", [HttpStatus]),
