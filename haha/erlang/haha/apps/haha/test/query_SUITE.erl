@@ -114,8 +114,14 @@ test_query_whatareyou(_Config) ->
 
     ok.
 
-test_query_profile(_Config) ->
+test_query_profile(Config) ->
     MyPort = application:get_env(haha, port, 8080),
+
+    %% test json file with query openc2 profile
+    JsonFileName = "query.profile.json",
+    %% expect status=OK ie 200
+    StatusCode = 200,
+    ok = helper:post_oc2_no_body(JsonFileName, StatusCode, Config),
 
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
