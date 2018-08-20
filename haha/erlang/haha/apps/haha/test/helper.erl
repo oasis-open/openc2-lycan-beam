@@ -82,48 +82,63 @@ post_oc2_no_body(JsonFileName, ExpectedStatus, Config) ->
 post_oc2_body(JsonFileName, ExpectedStatus, ResultsFileName, Config) ->
     %% read json to send
     JsonTxt = read_json_file(JsonFileName, Config),
+    lager:info("helper:JsonTxt= ~p", [JsonTxt]),
 
     %% read and validate expected results
     ExpectedResultsTxt = read_json_file(ResultsFileName, Config),
+    lager:info("helper:ExpectedResultsTxt= ~p", [ExpectedResultsTxt]),
 
     %% convert json to erlang terms
     ExpectedResults = jiffy:decode(ExpectedResultsTxt, [return_maps]),
+    lager:info("helper:ExpectedResults= ~p", [ExpectedResults]),
 
     %% open connection to send post
-    Conn = make_conn(),
+    ConnPid = make_conn(),
 
-    %% send post
-    {ok, Response} = gun:post( Conn
-                                 , "/openc2"  % Url
-                                 , [ { <<"content-type">>  % ReqHeaders
-                                     , <<"application/json">>
-                                     }
-                                   ]
-                                 , JsonTxt  % ReqBody
-                                 , #{}      % Options
-                                 ),
-    %% compare expected status to resonse status
-    ResponseStatus = maps:get(status_code, Response),
-    ExpectedStatus = ResponseStatus,
+    %% setup headers to send
+    Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
-    check_status(ExpectedResults, Response),
+    %% send json command to openc2
+    StreamRef = gun:post(ConnPid, "/openc2", Headers, JsonTxt),
 
+    %% check reply
+    Response = gun:await(ConnPid,StreamRef),
+
+    %% Check contents of reply
+    response = element(1,Response),
+    %% expect nofin since expecting a body
+    nofin = element(2, Response),
+    Status = element(3,Response),
+    %% test status is what was expected
+    ExpectedStatus = Status,
     %% check headers
-    check_headers(Response),
+    ResponseHeaders = element(4,Response),
+    true= lists:member({<<"server">>,<<"Cowboy">>},ResponseHeaders),
+    %% don't bother with date being correct, just check exists
+    { <<"date">>, _Date } =  lists:keyfind(<<"date">>, 1, ResponseHeaders),
 
-    %% check has body and is json
-    #{ body := RespBody } = Response,
+    %% get the body of the reply
+    {ok, ResponseBody} = gun:await_body(ConnPid, StreamRef),
+    lager:info("helper:RespBody= ~p", [ResponseBody]),
 
-    %% decode json into erlang map
-    JsonMap = jiffy:decode( RespBody, [return_maps] ),
+    %% test body is json
+    true = is_json(ResponseBody),
 
-    %% check all components are in response json
-    check_keys(JsonMap, ExpectedResults),
-
-    %% check correct return values in response
-    check_json_values(JsonMap, ExpectedResults),
+    %% test body is what was expected by comparing decoded erlang
+    %%    (so not failed based on diff order or spacing)
+    ResponseErl = jiffy:decode( ResponseBody, [return_maps] ),
+    ExpectedResults = ResponseErl,
 
     ok.
+
+%% check if text is json by decoding
+is_json(Txt) ->
+  try jiffy:decode( Txt, [return_maps] ) of
+    _ -> true
+  catch
+    _:_ -> false
+  end.
+
 %% include path in filename
 full_data_file_name(Filename, Config) ->
     filename:join( ?config( data_dir, Config ), Filename ).
@@ -149,70 +164,3 @@ make_conn() ->
     MyPort = application:get_env(ocas, port, 8080),
     {ok, Conn} = gun:open("localhost", MyPort),
     Conn.
-
-%% check status of a response
-check_status(ExpectedResults, Response) ->
-    ExpectedStatus = maps:get(<<"ExpectedStatus">>, ExpectedResults),
-    ResponseStatus = maps:get(status_code, Response),
-    ExpectedStatus = ResponseStatus,
-    ok.
-
-%% check response headers
-check_headers(Response) ->
-    %% get the headers out of the response
-
-    #{ headers := RespHeaders } = Response,
-
-    %% verify headers
-    { <<"server">>, <<"Cowboy">>} =  lists:keyfind( <<"server">>
-                                                  , 1
-                                                  , RespHeaders
-                                                  ),
-    { <<"date">>, _Date } =  lists:keyfind(<<"date">>, 1, RespHeaders),
-    ok.
-
-check_keys(JsonMap, ExpectedResults) ->
-    %% get expected keys
-    ExpectedKeys = maps:get(<<"ExpectedJsonKeys">>, ExpectedResults),
-
-    %% get response keys
-    ResponseKeys = maps:keys(JsonMap),
-    lager:info("ResponseKeys: ~p", [ResponseKeys]),
-
-    %% check expected are in response
-    check_key(ResponseKeys, ExpectedKeys),
-    JsonMap.
-
-check_key(_ResultKeys, [] ) ->
-    %% done since list empty
-    ok;
-
-check_key(ResultKeys, [Key | RestOfKeys] ) ->
-    %% check key is in Results
-    lager:info("check_key: ~p", [Key]),
-    true = lists:member(Key, ResultKeys),
-
-    %% recurse thru rest of list
-    check_key(ResultKeys, RestOfKeys).
-
-%% check response contains key/values expected
-check_json_values(JsonMap, ExpectedResults) ->
-    %% get expected key/value map
-    ExpectedJsonPairMap = maps:get(<<"ExpectedJsonPairs">>, ExpectedResults),
-    ExpectedJsonPairs = maps:to_list(ExpectedJsonPairMap),
-    lager:info("ResponseMap: ~p", [JsonMap]),
-
-    %% recurse thru {key,value} in ExpectedJsonPairs looking for match
-    check_json_pair( ExpectedJsonPairs, JsonMap).
-
-check_json_pair( [], _JsonMap) ->
-    % done
-    ok;
-
-check_json_pair( [ {Key, Value} | RestOfExepectedPairs ], JsonMap) ->
-    %% check in key/value in json map
-    lager:info("key/value: ~p/~p", [Key, Value]),
-    Value = maps:get(Key, JsonMap),
-
-    %% recurse on to next pair
-    check_json_pair( RestOfExepectedPairs, JsonMap).

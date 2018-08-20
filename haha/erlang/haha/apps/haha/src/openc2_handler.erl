@@ -139,7 +139,7 @@ check_body(Req0, State0) ->
           lager:info("has_id: command missing id"),
           {400, <<"missing command id">>, Req1, State1};
         true ->
-          lager:info("has_id: command missing id"),
+          lager:info("has_id: command has id"),
           has_action(TopFields, JsonMap, Req1, State2)
     end.
 
@@ -195,72 +195,63 @@ check_action(JsonMap, Req1, State1) ->
 check_target(JsonMap, Req, State) ->
     TargetBin = maps:get( <<"target">>, JsonMap ),
     lager:info("TargetBin ~p", [TargetBin]),
-    %% parse the type of target so can select on it
-    %%  TargetInfo = { TargetIsBinary, TargetIsMap, TopTarget, SpecifierList}
-    TargetInfo = target_typing(TargetBin),
-    lager:info("sc: TargetInfo = ~p", [TargetInfo]),
-
-    case TargetInfo of
-        {true, false, <<"Hello World">>, _} ->
-            %% valid Hello World
-            {200, <<"Hello World">>, Req, State};
-        {true, false, <<"openc2">>, _} ->
-            %% valid open2 all - same as full list of specifiers
-            %% fix this later so not hardcoded list
-            lager:info("ToDo: fix so no target specs is not hard coded list"),
-            AllSpecs = [<<"profile">>, <<"version">>, <<"schema">>],
-            process_spec(AllSpecs, Req, State);
-        {true, false, Target, _} ->
-            %% invalid target
-            lager:info("check_target bad target ~p", [Target]),
-            {400, <<"Invalid Target">>, Req, State};
-        {false, true, error, ErrorMsg} ->
-            %% return error encountered
-            lager:info("check_target error parsing specs"),
-            {400, ErrorMsg, Req, State};
-        {false, true, <<"openc2">>, SpecifierList} ->
-            %% valid so far
-            lager:info("check_target SpecList ~p", [SpecifierList]),
-            %% continue on to process SpecifierList
-            process_spec(SpecifierList, Req, State);
-        {_, _, _, _} ->
-            lager:info("check_target error _,_,_,_"),
-            %% return error
-            {400, <<"Invalid Target">>, Req, State}
-    end.
-
-target_typing(TargetBin) ->
+    %% check if simple case of Hello World
     TargetIsBinary = is_binary(TargetBin),
-    TargetIsMap = is_map(TargetBin),
-    {TopTarget, SpecifierList} = string_map( TargetIsBinary
-                                           , TargetIsMap
-                                           , TargetBin
-                                           ),
-    {TargetIsBinary, TargetIsMap, TopTarget, SpecifierList}.
+    binary_target(TargetIsBinary, TargetBin, Req, State).
 
-string_map(true, _TargetIsMap, TargetBin) ->
-    TopTarget = TargetBin,
-    SpecifierList = [],
-    {TopTarget, SpecifierList};
-string_map(false, true, TargetBin) ->
-    lager:info("stringmap TargetBin as map"),
-    TargetList = maps:keys(TargetBin),
-    %% error if not one and only one target in map
-    case length(TargetList) of
-        0 ->
-          {error, ["only one target allowed"]};
-        1 ->
-          %% the one item is the target
-          TopTarget = lists:nth(1,TargetList),
-          SpecifierMap = maps:get(TopTarget,TargetBin),
-          SpecifierList = maps:keys(SpecifierMap),
-          {TopTarget, SpecifierList};
-        _ ->
-          {error, ["only one target allowed"]}
-    end;
-string_map(false, false, _) ->
-    %% bad target value since neither string nor map
-    {error, ["bad target json"]}.
+binary_target(true, <<"Hello World">>, Req, State) ->
+  %% TargetIsBinary = true, TargetBin = <<"Hello World">>
+  %% valid so return hello world
+  lager:info("binary_target Hello World"),
+  {200, <<"Hello World">>, Req, State};
+
+binary_target(true, _TargetBin, Req, State) ->
+  %% TargetIsBinary = true, TargetBin != <<"Hello World">> therefore error
+  lager:info("binary_target but not Hello World"),
+  {400, <<"Bad Target">>, Req, State};
+
+binary_target(false, TargetBin, Req, State) ->
+  %% TargetIsBinary = false, so must be map
+  lager:info("binary_target map"),
+  map_target(is_map(TargetBin), TargetBin, Req, State).
+
+map_target(false, _TargetMap, Req, State) ->
+  %% Target is neither binary text nor map so error out
+  lager:info("map_target false"),
+  {400, <<"Bad Target">>, Req, State};
+
+map_target(true, TargetMap, Req, State) ->
+  %% Target is map so check only one target
+  lager:info("map_target true"),
+  num_target(length(maps:keys(TargetMap)), TargetMap, Req, State).
+
+num_target(0, _TargetMap, Req, State) ->
+  %% target is empty map therefore error
+  lager:info("num_target target is empty map"),
+  {400, <<"Missing Target Info">>, Req, State};
+
+num_target(1, TargetMap, Req, State) ->
+  %% one target type so check it is correct one
+  lager:info("num_target has 1 target"),
+  TargetType = lists:nth(1,maps:keys(TargetMap)),
+  check_target_type(TargetType, TargetMap, Req, State);
+
+num_target(_, _TargetMap, Req, State) ->
+  %% too many targets therefore error
+  lager:info("num_target has too many targets"),
+  {400, <<"only one target type allowed">>, Req, State}.
+
+check_target_type(<<"openc2">>, TargetMap, Req, State) ->
+  %% TargetType = openc2
+  lager:info("check_target_type openc2 target"),
+  SpecifierList = maps:get(<<"openc2">>,TargetMap),
+  lager:info("check_target_type SpecifierList ~p", [SpecifierList]),
+  process_spec(SpecifierList, Req, State);
+
+check_target_type(_TargetType, _TargetMap, Req, State) ->
+  %% TargetType != openc2
+  lager:info("check_target_type unknown target"),
+  {400, <<"unknown target">>, Req, State}.
 
 process_spec(SpecifierList, Req, State) ->
     lager:info("process_spec SpecList ~p", [SpecifierList]),

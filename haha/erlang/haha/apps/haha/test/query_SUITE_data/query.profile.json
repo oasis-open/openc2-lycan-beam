@@ -1,4 +1,4 @@
-{"id":"0b4153de",
+{"id":"bad1dea01",
  "action":"query",
- "target":{"openc2":{"profile":""}}
+ "target":{"openc2":["profile"]}
  }
