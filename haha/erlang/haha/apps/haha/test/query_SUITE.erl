@@ -36,7 +36,7 @@
          , suite/0
          , init_per_suite/1
          , end_per_suite/1
-         , test_query_whatareyou/1
+         , test_query_helloworld/1
          , test_query_profile/1
          , test_query_schema/1
          , test_query_version/1
@@ -47,7 +47,7 @@
 
 %% tests to run
 all() ->
-    [ test_query_whatareyou
+    [ test_query_helloworld
     , test_query_profile
     , test_query_schema
     , test_query_version
@@ -78,39 +78,20 @@ init_per_suite(Config) ->
 end_per_suite(Config) ->
     Config.
 
-test_query_whatareyou(_Config) ->
-    MyPort = application:get_env(haha, port, 8080),
+test_query_helloworld(Config) ->
+  %% test json file with query openc2 profile
+  JsonSendFileName = "query.helloworld.json",
+  %% expect results files
+  JsonResponseFileName = "query.helloworld.reply.json",
 
-    {ok, ConnPid} = gun:open("localhost", MyPort),
-    Headers = [ {<<"content-type">>, <<"application/json">>} ],
-
-    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"query\",\"target\":\"Hello World\"}">>,
-
-    %% send json command to openc2
-    StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
-
-    %% check reply
-    Response = gun:await(ConnPid,StreamRef),
-    lager:info("test_query_whatareyou:Response= ~p", [Response]),
-
-    %% Check contents of reply
-    response = element(1,Response),
-    nofin = element(2, Response),
-    Status = element(3,Response),
-    ExpectedStatus = 200,
-    ExpectedStatus = Status,
-
-    RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"13">>},RespHeaders),
-    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_query_whatareyou:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"Hello World\"">> = RespBody,
+  %% expect status=OK ie 200
+  StatusCode = 200,
+  %% send command and check results
+  ok = helper:post_oc2_body( JsonSendFileName
+                           , StatusCode
+                           , JsonResponseFileName
+                           , Config
+                           ),
 
     ok.
 
@@ -128,7 +109,7 @@ test_query_profile(Config) ->
                              , JsonResponseFileName
                              , Config
                              ),
-                             
+
     ok.
 
 test_query_schema(_Config) ->
