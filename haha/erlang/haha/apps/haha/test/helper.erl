@@ -82,11 +82,15 @@ post_oc2_no_body(JsonFileName, ExpectedStatus, Config) ->
 post_oc2_body(JsonFileName, ExpectedStatus, ResultsFileName, Config) ->
     %% read json to send
     JsonTxt = read_json_file(JsonFileName, Config),
-    lager:info("helper:JsonTxt= ~p", [JsonTxt]),
+    lager:debug("helper:JsonTxt= ~p", [JsonTxt]),
+    %% validate Json
+    true = is_json(JsonTxt),
 
     %% read and validate expected results
     ExpectedResultsTxt = read_json_file(ResultsFileName, Config),
-    lager:info("helper:ExpectedResultsTxt= ~p", [ExpectedResultsTxt]),
+    lager:debug("helper:ExpectedResultsTxt= ~p", [ExpectedResultsTxt]),
+    %% validate Json
+    true = is_json(ExpectedResultsTxt),
 
     %% convert json to erlang terms
     ExpectedResults = jiffy:decode(ExpectedResultsTxt, [return_maps]),
