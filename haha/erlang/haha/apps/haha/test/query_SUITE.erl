@@ -160,38 +160,58 @@ test_query_schema(_Config) ->
       ok.
 
 
-test_query_version(_Config) ->
-          MyPort = application:get_env(haha, port, 8080),
+test_query_version(Config) ->
+    %% test json file with query openc2 profile
+    JsonSendFileName = "query.version.json",
+    %% expect results files
+    JsonResponseFileName = "query.version.reply.json",
 
-          {ok, ConnPid} = gun:open("localhost", MyPort),
-          Headers = [ {<<"content-type">>, <<"application/json">>} ],
+    %% expect status=OK ie 200
+    StatusCode = 200,
+    %% send command and check results
+    ok = helper:post_oc2_body( JsonSendFileName
+                             , StatusCode
+                             , JsonResponseFileName
+                             , Config
+                             ),
 
-          Body = <<"{\"id\":\"0b4153de\",\"action\":\"query\",\"target\":{\"openc2\":{\"version\":\"\"}}}">>,
 
-          %% send json command to openc2
-          StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
 
-          %% check reply
-          Response = gun:await(ConnPid,StreamRef),
-          lager:info("test_query_profile:Response= ~p", [Response]),
 
-          %% Check contents of reply
-          response = element(1,Response),
-          nofin = element(2, Response),
-          Status = element(3,Response),
-          ExpectedStatus = 200,
-          ExpectedStatus = Status,
 
-          RespHeaders = element(4,Response),
-          true = lists:member({<<"content-length">>,<<"17">>},RespHeaders),
-          true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
 
-          %% get the body of the reply
-          {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
 
-          lager:info("test_query_profile:RespBody= ~p", [RespBody]),
-
-          %% test body is what was expected
-          <<"{\"version\":\"1.0\"}">> = RespBody,
+%          MyPort = application:get_env(haha, port, 8080),
+%
+%          {ok, ConnPid} = gun:open("localhost", MyPort),
+%          Headers = [ {<<"content-type">>, <<"application/json">>} ],
+%
+%          Body = <<"{\"id\":\"0b4153de\",\"action\":\"query\",\"target\":{\"openc2\":{\"version\":\"\"}}}">>,
+%
+%          %% send json command to openc2
+%          StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
+%
+%          %% check reply
+%          Response = gun:await(ConnPid,StreamRef),
+%          lager:info("test_query_profile:Response= ~p", [Response]),
+%
+%          %% Check contents of reply
+%          response = element(1,Response),
+%          nofin = element(2, Response),
+%          Status = element(3,Response),
+%          ExpectedStatus = 200,
+%          ExpectedStatus = Status,
+%
+%          RespHeaders = element(4,Response),
+%          true = lists:member({<<"content-length">>,<<"17">>},RespHeaders),
+%          true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
+%
+%          %% get the body of the reply
+%          {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
+%
+%          lager:info("test_query_profile:RespBody= ~p", [RespBody]),
+%
+%          %% test body is what was expected
+%          <<"{\"version\":\"1.0\"}">> = RespBody,
 
           ok.
