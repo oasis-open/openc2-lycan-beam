@@ -64,8 +64,7 @@ post_oc2_no_body(JsonFileName, ExpectedStatus, Config) ->
     %% Check contents of reply
     response = element(1,Response),
     %% since this is no_body, expect fin
-    nofin = element(2, Response),
-    %fin = element(2, Response),
+    fin = element(2, Response),
     Status = element(3,Response),
     ExpectedStatus = Status,
     %% check headers
