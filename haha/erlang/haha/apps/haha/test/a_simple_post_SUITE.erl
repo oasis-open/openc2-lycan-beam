@@ -81,44 +81,27 @@ init_per_suite(Config) ->
     {ok, _AppList3} = application:ensure_all_started(haha),
     %%lager:info("AppList3: ~p~n", [AppList3]),
 
+    lager_common_test_backend:bounce(debug),
+
     Config.
 
 end_per_suite(Config) ->
     Config.
 
-test_post(_Config) ->
-    MyPort = application:get_env(haha, port, 8080),
+test_post(Config) ->
+  %% test json file with query openc2 profile
+  JsonSendFileName = "query.helloworld.json",
+  %% expect results files
+  JsonResponseFileName = "query.helloworld.reply.json",
 
-    {ok, ConnPid} = gun:open("localhost", MyPort),
-    Headers = [ {<<"content-type">>, <<"application/json">>} ],
-
-    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"query\",\"target\":\"Hello World\"}">>,
-
-    %% send json command to openc2
-    StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
-
-    %% check reply
-    Response = gun:await(ConnPid,StreamRef),
-    lager:info("test_post:Response= ~p", [Response]),
-
-    %% Check contents of reply
-    response = element(1,Response),
-    nofin = element(2, Response),
-    Status = element(3,Response),
-    ExpectedStatus = 200,
-    ExpectedStatus = Status,
-
-    RespHeaders = element(4,Response),
-    true = lists:member({<<"content-length">>,<<"13">>},RespHeaders),
-    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
-
-    %% get the body of the reply (which has error msg)
-    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
-
-    lager:info("test_post:RespBody= ~p", [RespBody]),
-
-    %% test body is what was expected
-    <<"\"Hello World\"">> = RespBody,
+  %% expect status=OK ie 200
+  StatusCode = 200,
+  %% send command and check results
+  ok = helper:post_oc2_body( JsonSendFileName
+                           , StatusCode
+                           , JsonResponseFileName
+                           , Config
+                           ),
 
     ok.
 
