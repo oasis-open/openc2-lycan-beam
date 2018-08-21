@@ -82,19 +82,19 @@ post_oc2_no_body(JsonFileName, ExpectedStatus, Config) ->
 post_oc2_body(JsonFileName, ExpectedStatus, ResultsFileName, Config) ->
     %% read json to send
     JsonTxt = read_json_file(JsonFileName, Config),
-    lager:debug("helper:JsonTxt= ~p", [JsonTxt]),
+    %lager:debug("helper:JsonTxt= ~p", [JsonTxt]),
     %% validate Json
     true = is_json(JsonTxt),
 
     %% read and validate expected results
     ExpectedResultsTxt = read_json_file(ResultsFileName, Config),
-    lager:debug("helper:ExpectedResultsTxt= ~p", [ExpectedResultsTxt]),
+    %lager:debug("helper:ExpectedResultsTxt= ~p", [ExpectedResultsTxt]),
     %% validate Json
     true = is_json(ExpectedResultsTxt),
 
     %% convert json to erlang terms
     ExpectedResults = jiffy:decode(ExpectedResultsTxt, [return_maps]),
-    lager:info("helper:ExpectedResults= ~p", [ExpectedResults]),
+    %lager:info("helper:ExpectedResults= ~p", [ExpectedResults]),
 
     %% open connection to send post
     ConnPid = make_conn(),
@@ -123,7 +123,7 @@ post_oc2_body(JsonFileName, ExpectedStatus, ResultsFileName, Config) ->
 
     %% get the body of the reply
     {ok, ResponseBody} = gun:await_body(ConnPid, StreamRef),
-    lager:info("helper:RespBody= ~p", [ResponseBody]),
+    %lager:info("helper:RespBody= ~p", [ResponseBody]),
 
     %% test body is json
     true = is_json(ResponseBody),
