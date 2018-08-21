@@ -74,41 +74,58 @@ init_per_suite(Config) ->
     %%lager:info("AppList2: ~p~n", [AppList2]),
 
     %% since ct doesn't read sys.config, set configs here
-    application:set_env(haha, port, 8080),
-    application:set_env(haha, listener_count, 5),
+    application:set_env(haga, port, 8080),
+    application:set_env(haga, listener_count, 5),
 
     %% start application
-    {ok, _AppList3} = application:ensure_all_started(haha),
+    {ok, _AppList3} = application:ensure_all_started(haga),
     %%lager:info("AppList3: ~p~n", [AppList3]),
-
-    lager_common_test_backend:bounce(debug),
 
     Config.
 
 end_per_suite(Config) ->
     Config.
 
-test_post(Config) ->
-  %% test json file with query openc2 profile
-  JsonSendFileName = "query.helloworld.json",
-  %% expect results files
-  JsonResponseFileName = "query.helloworld.reply.json",
+test_post(_Config) ->
+    MyPort = application:get_env(haga, port, 8080),
 
-  %% expect status=OK ie 200
-  StatusCode = 200,
-  %% send command and check results
-  ok = helper:post_oc2_body( JsonSendFileName
-                           , StatusCode
-                           , JsonResponseFileName
-                           , Config
-                           ),
+    {ok, ConnPid} = gun:open("localhost", MyPort),
+    Headers = [ {<<"content-type">>, <<"application/json">>} ],
+
+    Body = <<"{\"id\":\"0b4153de-03e1-4008-a071-0b2b23e20723\",\"action\":\"query\",\"target\":\"Hello World\"}">>,
+
+    %% send json command to openc2
+    StreamRef = gun:post(ConnPid, "/openc2", Headers, Body),
+
+    %% check reply
+    Response = gun:await(ConnPid,StreamRef),
+    lager:info("test_post:Response= ~p", [Response]),
+
+    %% Check contents of reply
+    response = element(1,Response),
+    nofin = element(2, Response),
+    Status = element(3,Response),
+    ExpectedStatus = 200,
+    ExpectedStatus = Status,
+
+    RespHeaders = element(4,Response),
+    true = lists:member({<<"content-length">>,<<"13">>},RespHeaders),
+    true= lists:member({<<"server">>,<<"Cowboy">>},RespHeaders),
+
+    %% get the body of the reply (which has error msg)
+    {ok, RespBody} = gun:await_body(ConnPid, StreamRef),
+
+    lager:info("test_post:RespBody= ~p", [RespBody]),
+
+    %% test body is what was expected
+    <<"\"Hello World\"">> = RespBody,
 
     ok.
 
 test_bad_method(_Config) ->
     %% test if send get when expecting post
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(haga, port, 8080),
     lager:info("test_bad_method"),
     {ok, Conn} = gun:open("localhost", MyPort),
 
@@ -138,7 +155,7 @@ test_bad_method(_Config) ->
 test_post_missing_body(_Config) ->
     %% test proper reponse to bad input (no body to html request)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(haga, port, 8080),
     lager:info("test_post_missing_body"),
     {ok, ConnPid} = gun:open("localhost", MyPort),
 
@@ -177,7 +194,7 @@ test_unsupported_media_type(_Config) ->
     %% test proper reponse to bad input
     %%     (html request has media type other than json)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(haga, port, 8080),
     lager:info("test_unsupported_media_type"),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"text/plain">>} ],
@@ -208,7 +225,7 @@ test_unsupported_media_type(_Config) ->
 test_bad_json(_Config) ->
     %% test proper reponse to bad input (unparseable json)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(haga, port, 8080),
     %%lager:info("test_bad_json:port= ~p", [MyPort]),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
@@ -247,7 +264,7 @@ test_bad_json(_Config) ->
 test_bad_action(_Config) ->
     %% test proper reponse to bad input (unrecognized action)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(haga, port, 8080),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
@@ -286,7 +303,7 @@ test_bad_action(_Config) ->
 test_missing_action(_Config) ->
     %% test proper reponse to bad input (missing action)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(haga, port, 8080),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 
@@ -325,7 +342,7 @@ test_missing_action(_Config) ->
 test_missing_target(_Config) ->
     %% test proper reponse to bad input (missing target)
 
-    MyPort = application:get_env(haha, port, 8080),
+    MyPort = application:get_env(haga, port, 8080),
     {ok, ConnPid} = gun:open("localhost", MyPort),
     Headers = [ {<<"content-type">>, <<"application/json">>} ],
 

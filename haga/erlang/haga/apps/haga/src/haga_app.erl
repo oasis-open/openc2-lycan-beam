@@ -25,11 +25,11 @@
 %%%-------------------------------------------------------------------
 
 %%%-------------------------------------------------------------------
-%% @doc haha public API
+%% @doc haga public API
 %% @end
 %%%-------------------------------------------------------------------
 
--module(haha_app).
+-module(haga_app).
 -author("Duncan Sparrell").
 -copyright("2018, Duncan Sparrell, sFractal Consulting").
 %%-license(MIT).
@@ -48,7 +48,7 @@
 start(_StartType, _StartArgs) ->
 
     %% log pid of this
-    lager:info("haha_app pid: ~p", [self()]),
+    lager:info("haga_app pid: ~p", [self()]),
 
     %% log what apps running
     Apps = application:which_applications(),
@@ -56,7 +56,7 @@ start(_StartType, _StartArgs) ->
 
     %% start supervisor
     lager:info("starting supervisor"),
-    haha_sup:start_link(),
+    haga_sup:start_link(),
 
     %% start webserver
     lager:info("starting webserver"),
@@ -73,7 +73,7 @@ start(_StartType, _StartArgs) ->
 %%--------------------------------------------------------------------
 -spec start() -> {'error', {atom(), _}} | {'ok', [atom()]}.
 start() ->
-  application:ensure_all_started(haha).
+  application:ensure_all_started(ocas).
 
 
 %%--------------------------------------------------------------------
