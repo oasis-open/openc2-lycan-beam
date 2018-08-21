@@ -42,32 +42,33 @@
 -ignore_xref({handle_json, 2}).
 
 init( Req, Opts) ->
-  lager:info("got to openc2_handler init"),
+  %lager:info("got to openc2_handler init"),
   {cowboy_rest, Req, Opts}.
 
 allowed_methods(Req, State) ->
-    lager:info("got to allowed methods"),
+    %lager:info("got to allowed methods"),
     lager:info("allowed methods state ~p", [State]),
+    %% covert from State being empty list to being an empty map
     State2 = #{},
     {[<<"POST">>], Req, State2}.
 
 content_types_accepted(Req, State) ->
-    lager:info("got to content_types"),
-    lager:info("content_types_accepted state ~p", [State]),
+    %lager:info("got to content_types"),
+    %lager:info("content_types_accepted state ~p", [State]),
     %% header has content =application/json/whatever
     { [{ { <<"application">>, <<"json">>, '*'} , handle_json}], Req, State}.
 
 handle_json(Req0, State0) ->
-    lager:info("got to handle_json"),
-    lager:info("handle_json state ~p", [State0]),
+    %lager:info("got to handle_json"),
+    %lager:info("handle_json state ~p", [State0]),
     Results = process_json(Req0, State0),
     {HttpStatus, HttpErl, Req2, State2} = Results,
-    lager:info("handle_json HttpStatus ~p", [HttpStatus]),
-    lager:info("handle_json HttpErl ~p", [HttpErl]),
-    lager:info("handle_json req2 ~p", [Req2]),
-    lager:info("handle_json state2 ~p", [State2]),
+    %lager:info("handle_json HttpStatus ~p", [HttpStatus]),
+    %lager:info("handle_json HttpErl ~p", [HttpErl]),
+    %lager:info("handle_json req2 ~p", [Req2]),
+    %lager:info("handle_json state2 ~p", [State2]),
     ReturnBody = jiffy:encode(HttpErl),
-    lager:info("handle_json ReturnBody ~p", [ReturnBody]),
+    %lager:info("handle_json ReturnBody ~p", [ReturnBody]),
     Req3 = cowboy_req:reply(HttpStatus
                            , #{<<"content-type">> => <<"application/json">>}
                            , ReturnBody
@@ -80,7 +81,7 @@ process_json(Req, State0) ->
     try check_body(Req, State0) of
         %% success so return results
         Results ->
-                lager:info("process_json success"),
+                %lager:info("process_json success"),
                 Results
     catch
         _:_ -> {400, <<"error processing json command">>, Req, State0}
@@ -88,25 +89,24 @@ process_json(Req, State0) ->
 
 check_body(Req0, State0) ->
     %% validate then run commands
-    lager:info("run_command starting"),
-    lager:info("run_command Req0 ~p", [Req0]),
-    lager:info("run_command State0 ~p", [State0]),
+    %lager:info("run_command starting"),
+    %lager:info("run_command Req0 ~p", [Req0]),
+    %lager:info("run_command State0 ~p", [State0]),
     %% check http has body
     HasBody = cowboy_req:has_body(Req0),
-    lager:info("run_command HasBody ~p", [HasBody]),
+    %lager:info("run_command HasBody ~p", [HasBody]),
     %% return error message if no body, otherwise continue on
     case HasBody of
         false ->
             lager:info("run_command: no http body"),
             {400, <<"Missing http body">>, Req0, State0};
         true ->
-            lager:info("run_command: has http body"),
+            %lager:info("run_command: has http body"),
             is_json(Req0, State0)
     end.
 
   is_json(Req0, State0) ->
     lager:info("TODO need to get config for times"),
-    lager:info("TODO fix is_json and jsx/jiffy incl in tests"),
     { ok, Body, Req1} = cowboy_req:read_body(Req0
                                             , #{ length => 1000
                                                , period => 3000
@@ -115,31 +115,31 @@ check_body(Req0, State0) ->
 
     lager:info("run_command Body: ~p", [Body] ),
     State1 = maps:put(http_body, Body, State0),
-    lager:info("run_command State1: ~p", [State1] ),
+    %lager:info("run_command State1: ~p", [State1] ),
     %% decode json, if fails return error, else continue on
     try jiffy:decode(Body, [return_maps]) of
         JsonMap ->
-              lager:info("got to good jsonmap"),
+              %lager:info("got to good jsonmap"),
               has_id(JsonMap, Req1, State1)
     catch
         _:_ -> {400, <<"Can not parse JSON">>, Req1, State1}
     end.
 
   has_id(JsonMap, Req1, State1) ->
-    lager:info("has_id JsonMap: ~p", [JsonMap] ),
+    %lager:info("has_id JsonMap: ~p", [JsonMap] ),
     State2 = maps:put(json_map, JsonMap, State1),
 
     %% Get list of top level fields
     %%     and validate id/action/target are present and no others
     TopFields = maps:keys(JsonMap),
-    lager:info("top level fields ~p", [TopFields] ),
+    %lager:info("top level fields ~p", [TopFields] ),
     %% check if id present, error if not, continue on if present
     case lists:member(<<"id">>, TopFields) of
         false ->
           lager:info("has_id: command missing id"),
           {400, <<"missing command id">>, Req1, State1};
         true ->
-          lager:info("has_id: command has id"),
+          %lager:info("has_id: command has id"),
           has_action(TopFields, JsonMap, Req1, State2)
     end.
 
@@ -150,7 +150,7 @@ check_body(Req0, State0) ->
           lager:info("has_action: command missing action"),
           {400, <<"missing command action">>, Req1, State1};
         true ->
-          lager:info("has_action: has action"),
+          %lager:info("has_action: has action"),
           has_target(TopFields, JsonMap, Req1, State1)
     end.
 
@@ -160,7 +160,7 @@ check_body(Req0, State0) ->
           lager:info("has_target: command missing target"),
           {400, <<"missing command target">>, Req1, State1};
         true ->
-          lager:info("has_target passed"),
+          %lager:info("has_target passed"),
           has_extra(TopFields, JsonMap, Req1, State1)
     end.
 
@@ -168,7 +168,7 @@ has_extra(TopFields, JsonMap, Req1, State1) ->
     %% check if extra top level fields
     case length(TopFields) of
         3 ->
-          lager:info("run_command: command has correct # fields"),
+          %lager:info("run_command: command has correct # fields"),
           %% correct number so continue on
           check_action( JsonMap, Req1, State1);
         _ ->
@@ -180,10 +180,10 @@ has_extra(TopFields, JsonMap, Req1, State1) ->
 
 %% passed structure checks
 check_action(JsonMap, Req1, State1) ->
-    lager:info("passed structure checks"),
+    %lager:info("passed structure checks"),
     %% check for correct action (query)
     ActionBin = maps:get( <<"action">>, JsonMap ),
-    lager:info("ActionBin ~p", [ActionBin]),
+    %lager:info("ActionBin ~p", [ActionBin]),
     case ActionBin of
         %% if query, continue otherwise error
         <<"query">> ->
@@ -194,7 +194,7 @@ check_action(JsonMap, Req1, State1) ->
 
 check_target(JsonMap, Req, State) ->
     TargetBin = maps:get( <<"target">>, JsonMap ),
-    lager:info("TargetBin ~p", [TargetBin]),
+    %lager:info("TargetBin ~p", [TargetBin]),
     %% check if simple case of Hello World
     TargetIsBinary = is_binary(TargetBin),
     binary_target(TargetIsBinary, TargetBin, Req, State).
@@ -202,7 +202,7 @@ check_target(JsonMap, Req, State) ->
 binary_target(true, <<"Hello World">>, Req, State) ->
   %% TargetIsBinary = true, TargetBin = <<"Hello World">>
   %% valid so return hello world
-  lager:info("binary_target Hello World"),
+  %lager:info("binary_target Hello World"),
   {200, <<"Hello World">>, Req, State};
 
 binary_target(true, _TargetBin, Req, State) ->
@@ -212,7 +212,7 @@ binary_target(true, _TargetBin, Req, State) ->
 
 binary_target(false, TargetBin, Req, State) ->
   %% TargetIsBinary = false, so must be map
-  lager:info("binary_target map"),
+  %lager:info("binary_target map"),
   map_target(is_map(TargetBin), TargetBin, Req, State).
 
 map_target(false, _TargetMap, Req, State) ->
@@ -222,7 +222,7 @@ map_target(false, _TargetMap, Req, State) ->
 
 map_target(true, TargetMap, Req, State) ->
   %% Target is map so check only one target
-  lager:info("map_target true"),
+  %lager:info("map_target true"),
   num_target(length(maps:keys(TargetMap)), TargetMap, Req, State).
 
 num_target(0, _TargetMap, Req, State) ->
@@ -232,7 +232,7 @@ num_target(0, _TargetMap, Req, State) ->
 
 num_target(1, TargetMap, Req, State) ->
   %% one target type so check it is correct one
-  lager:info("num_target has 1 target"),
+  %lager:info("num_target has 1 target"),
   TargetType = lists:nth(1,maps:keys(TargetMap)),
   check_target_type(TargetType, TargetMap, Req, State);
 
@@ -243,9 +243,9 @@ num_target(_, _TargetMap, Req, State) ->
 
 check_target_type(<<"openc2">>, TargetMap, Req, State) ->
   %% TargetType = openc2
-  lager:info("check_target_type openc2 target"),
+  %lager:info("check_target_type openc2 target"),
   SpecifierList = maps:get(<<"openc2">>,TargetMap),
-  lager:info("check_target_type SpecifierList ~p", [SpecifierList]),
+  %lager:info("check_target_type SpecifierList ~p", [SpecifierList]),
   process_spec(SpecifierList, Req, State);
 
 check_target_type(_TargetType, _TargetMap, Req, State) ->
@@ -254,21 +254,21 @@ check_target_type(_TargetType, _TargetMap, Req, State) ->
   {400, <<"unknown target">>, Req, State}.
 
 process_spec(SpecifierList, Req, State) ->
-    lager:info("process_spec SpecList ~p", [SpecifierList]),
+    %lager:info("process_spec SpecList ~p", [SpecifierList]),
 
     case process_spec_list(SpecifierList, #{}) of
         {error, ErrorMsg} ->
             lager:info("process_spec error ~p", [ErrorMsg]),
             {400, <<"Problem with Target Specifiers">>, Req, State};
         {ok, Output} ->
-            lager:info("process_spec output ~p", [Output]),
+            %lager:info("process_spec output ~p", [Output]),
             {200, Output, Req, State}
         end.
 
 %% process_spec_list(SpecList, Output) creates output depending on specifiers
 process_spec_list([], Output) ->
     %% spec list now empty so done
-    lager:info("process_spec complete Output ~p", [Output]),
+    %lager:info("process_spec complete Output ~p", [Output]),
     {ok, Output};
 process_spec_list([H | T], Output) ->
       %% recurse thru specs creating output
@@ -278,7 +278,7 @@ process_spec_list([H | T], Output) ->
               lager:info("got to process_spec error ~p", [ErrorMsg]),
               {error, ErrorMsg};
           {ok, NewOutputList} ->
-              lager:info("got to process_spec NewOutputList ~p", [NewOutputList]),
+              %lager:info("got to process_spec NewOutputList ~p", [NewOutputList]),
               process_spec_list(T, NewOutputList)
           end.
 
@@ -290,7 +290,7 @@ output_spec(<<"profile">>, Output) ->
 
 output_spec(<<"schema">>, Output) ->
   %% return new output map with schema information
-  lager:info("output_spec about to get filename"),
+  %lager:info("output_spec about to get filename"),
   case code:priv_dir(haha) of
         {error, bad_name} ->
             % This occurs when not running as a release; e.g., erl -pa ebin
@@ -303,22 +303,20 @@ output_spec(<<"schema">>, Output) ->
             % on the file system
             ok
   end,
-  lager:info("output_spec about to read file"),
+  %lager:info("output_spec about to read file"),
   case file:read_file(filename:join([PrivDir, "haha.jadn"])) of
     {ok, Schema} ->
-        lager:info("output_spec read file ok ~p", [Schema]),
+        %lager:info("output_spec read file ok ~p", [Schema]),
         ok;
     AnyThingElse ->
         lager:info("output_spec trouble reading file ~p", [AnyThingElse]),
         Schema = "oops"
   end,
-  lager:info("output_spec schema: ~p", [Schema]),
+  %lager:info("output_spec schema: ~p", [Schema]),
   %% convert json text to erlang terms to put in map
   SchemaMap = jiffy:decode(Schema),
-  lager:info("output_spec schemamap: ~p", [SchemaMap]),
-  lager:info("output_spec preOutput: ~p", [Output]),
-  NewOutput = maps:put(<<"schema">>, SchemaMap, Output),
-  lager:info("output_spec NewOutput: ~p", [NewOutput]),
+  %lager:info("output_spec schemamap: ~p", [SchemaMap]),
+  %lager:info("output_spec preOutput: ~p", [Output]),
   { ok, maps:put(<<"schema">>, SchemaMap, Output) };
 
 output_spec(<<"version">>, Output) ->

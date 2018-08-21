@@ -1,0 +1,4 @@
+{"id":"bad1dea06",
+ "action":"query",
+ "target":{"openc2":["profile"], "Hello World":"Hello World"}
+ }

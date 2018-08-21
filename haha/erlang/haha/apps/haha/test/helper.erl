@@ -87,6 +87,7 @@ post_oc2_body(JsonFileName, ExpectedStatus, ResultsFileName, Config) ->
 
     %% read and validate expected results
     ExpectedResultsTxt = read_json_file(ResultsFileName, Config),
+    %lager:debug("helper:ResultsFileName= ~p", [ResultsFileName]),
     %lager:debug("helper:ExpectedResultsTxt= ~p", [ExpectedResultsTxt]),
     %% validate Json
     true = is_json(ExpectedResultsTxt),
@@ -130,6 +131,8 @@ post_oc2_body(JsonFileName, ExpectedStatus, ResultsFileName, Config) ->
     %% test body is what was expected by comparing decoded erlang
     %%    (so not failed based on diff order or spacing)
     ResponseErl = jiffy:decode( ResponseBody, [return_maps] ),
+    %lager:debug("post_oc2_body:ExpectedResults ~p",[ExpectedResults]),
+    %lager:debug("post_oc2_body:ResponseErl ~p",[ResponseErl]),
     ExpectedResults = ResponseErl,
 
     ok.

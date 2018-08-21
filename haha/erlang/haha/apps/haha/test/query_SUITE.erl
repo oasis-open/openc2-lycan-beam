@@ -119,7 +119,6 @@ test_query_schema(Config) ->
     JsonSendFileName = "query.schema.json",
     %% expect results files
     JsonResponseFileName = "haha.jadn",
-    %JsonResponseFileName = "query.profile.reply.json",
 
     %% expect status=OK ie 200
     StatusCode = 200,
@@ -130,7 +129,6 @@ test_query_schema(Config) ->
                              , Config
                              ),
       ok.
-
 
 test_query_version(Config) ->
     %% test json file with query openc2 profile

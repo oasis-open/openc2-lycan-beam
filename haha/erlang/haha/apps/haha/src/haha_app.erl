@@ -73,7 +73,7 @@ start(_StartType, _StartArgs) ->
 %%--------------------------------------------------------------------
 -spec start() -> {'error', {atom(), _}} | {'ok', [atom()]}.
 start() ->
-  application:ensure_all_started(ocas).
+  application:ensure_all_started(haha).
 
 
 %%--------------------------------------------------------------------
