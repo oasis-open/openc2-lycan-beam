@@ -41,14 +41,17 @@ For now, it is organized by beam application/library.
  * haha - Https Api Helloworld Actuator
     * ie a very simple do nothing actuator that is conformant to language
     * this is a work in progress and has NOT been brought up to (fill in currect CSDPR #'s)
+    * Issue 11 (https://github.com/oasis-open/openc2-lycan-beam/issues/11) is to bring this software current to Oct-2018 CSDPR
  * haga - Https Api GlobalWelcome Actuator
     * ie slighty fancier do nothing actuator that is conformant to language
     * this is a work in progress and has NOT been brought up to (fill in currect CSDPR #'s)
+    * Issue 12 (https://github.com/oasis-open/openc2-lycan-beam/issues/12) is to bring this software current to Oct-2018 CSDPR
  * Utils
     * library utilities useful across applications
  * slpfhw - StateLess Packet Filter Hello Helloworld
     * ie SLPF template code to serve as bases of bawnl, etc
     * this is a work in progress and has NOT been brought up to (fill in currect CSDPR #'s)
+    * Issue 13 (https://github.com/oasis-open/openc2-lycan-beam/issues/13) is to bring this software current to Oct-2018 CSDPR's
  * bawnl - Beam AWs Nacl Lycan
     *  ie a lycan (transformer) that runs on BEAM to interface OpenC2 to the AWS API's for NACL's
  * bawsl - Beam AWs Security group Lycan
