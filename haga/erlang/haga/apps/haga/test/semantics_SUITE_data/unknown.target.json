@@ -1,0 +1,4 @@
+{"id":"bad1dea07",
+ "action":"query",
+ "target":{"badtarget":["profile"]}
+ }

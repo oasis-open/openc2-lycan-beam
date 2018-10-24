@@ -119,38 +119,27 @@ check_body(Req0, State0) ->
     try jiffy:decode(Body, [return_maps]) of
         JsonMap ->
               %%lager:info("got to good jsonmap"),
-              has_id(JsonMap, Req1, State1)
+              has_action(JsonMap, Req1, State1)
     catch
         _:_ -> {400, <<"Can not parse JSON">>, Req1, State1}
     end.
 
-  has_id(JsonMap, Req1, State1) ->
-    %%lager:info("has_id JsonMap: ~p", [JsonMap] ),
+  has_action(JsonMap, Req1, State1) ->
+    %%lager:info("has_action JsonMap: ~p", [JsonMap] ),
     State2 = maps:put(json_map, JsonMap, State1),
 
     %% Get list of top level fields
     %%     and validate id/action/target are present and no others
     TopFields = maps:keys(JsonMap),
     lager:info("top level fields ~p", [TopFields] ),
-    %% check if id present, error if not, continue on if present
-    case lists:member(<<"id">>, TopFields) of
-        false ->
-          lager:info("has_id: command missing id"),
-          {400, <<"missing command id">>, Req1, State1};
-        true ->
-          %%lager:info("has_id: command has id"),
-          has_action(TopFields, JsonMap, Req1, State2)
-    end.
-
-  has_action(TopFields, JsonMap, Req1, State1) ->
     %% check if action present, error if not, continue on if present
     case lists:member(<<"action">>, TopFields) of
         false ->
           lager:info("has_action: command missing action"),
-          {400, <<"missing command action">>, Req1, State1};
+          {400, <<"missing command action">>, Req1, State2};
         true ->
           %%lager:info("has_action: has action"),
-          has_target(TopFields, JsonMap, Req1, State1)
+          has_target(TopFields, JsonMap, Req1, State2)
     end.
 
   has_target(TopFields, JsonMap, Req1, State1) ->
@@ -166,7 +155,7 @@ check_body(Req0, State0) ->
 has_extra(TopFields, JsonMap, Req1, State1) ->
     %% check if extra top level fields
     case length(TopFields) of
-        3 ->
+        2 ->
           %%lager:info("run_command: command has correct # fields"),
           %% correct number so continue on
           check_action( JsonMap, Req1, State1);
@@ -183,79 +172,16 @@ check_action(JsonMap, Req1, State0) ->
     %% check for correct action (query)
     ActionBin = maps:get( <<"action">>, JsonMap ),
     lager:info("ActionBin ~p", [ActionBin]),
-    case ActionBin of
-        %% continue if valid, otherwise error
-        <<"query">> ->
-            State1 = maps:put(action, ActionBin, State0),
-            check_target(JsonMap, Req1, State1);
-        <<"scan">> ->
-            State1 = maps:put(action, ActionBin, State0),
-            check_target(JsonMap, Req1, State1);
-        _ ->
-            State1 = maps:put(unknown_action, ActionBin, State0),
-            {400, <<"unknown action">>, Req1, State1}
-    end.
-
-check_target(JsonMap, Req, State) ->
-    TargetBin = maps:get( <<"target">>, JsonMap ),
-    %lager:info("TargetBin ~p", [TargetBin]),
-    %% check if simple case of Hello World
-    TargetIsBinary = is_binary(TargetBin),
-    binary_target(TargetIsBinary, TargetBin, Req, State).
-
-binary_target(true, <<"Hello World">>, Req, State) ->
-  %% TargetIsBinary = true, TargetBin = <<"Hello World">>
-  %% valid so return hello world
-  %lager:info("binary_target Hello World"),
-  {200, <<"Hello World">>, Req, State};
-
-binary_target(true, _TargetBin, Req, State) ->
-  %% TargetIsBinary = true, TargetBin != <<"Hello World">> therefore error
-  lager:info("binary_target but not Hello World"),
-  {400, <<"Bad Target">>, Req, State};
-
-binary_target(false, TargetBin, Req, State) ->
-  %% TargetIsBinary = false, so must be map
-  %lager:info("binary_target map"),
-  map_target(is_map(TargetBin), TargetBin, Req, State).
-
-map_target(false, _TargetMap, Req, State) ->
-  %% Target is neither binary text nor map so error out
-  lager:info("map_target false"),
-  {400, <<"Bad Target">>, Req, State};
-
-map_target(true, TargetMap, Req, State) ->
-  %% Target is map so check only one target
-  %lager:info("map_target true"),
-  num_target(length(maps:keys(TargetMap)), TargetMap, Req, State).
-
-num_target(0, _TargetMap, Req, State) ->
-  %% target is empty map therefore error
-  lager:info("num_target target is empty map"),
-  {400, <<"Missing Target Info">>, Req, State};
-
-num_target(1, TargetMap, Req, State) ->
-  %% one target type so check it is correct one
-  %lager:info("num_target has 1 target"),
-  TargetType = lists:nth(1,maps:keys(TargetMap)),
-  check_target_type(TargetType, TargetMap, Req, State);
-
-num_target(_, _TargetMap, Req, State) ->
-  %% too many targets therefore error
-  lager:info("num_target has too many targets"),
-  {400, <<"only one target type allowed">>, Req, State}.
-
-check_target_type(<<"openc2">>, TargetMap, Req, State) ->
-  %% TargetType = openc2
-  %lager:info("check_target_type openc2 target"),
-  SpecifierList = maps:get(<<"openc2">>,TargetMap),
-  %lager:info("check_target_type SpecifierList ~p", [SpecifierList]),
-  process_spec(SpecifierList, Req, State);
-
-check_target_type(_TargetType, _TargetMap, Req, State) ->
-  %% TargetType != openc2
-  lager:info("check_target_type unknown target"),
-  {400, <<"unknown target">>, Req, State}.
+    {TargetType, TargetSpecifiers} = target_decode(JsonMap),
+    lager:info("check_target:TargetType, TargetSpecifiers ~p, ~p",
+                [TargetType, TargetSpecifiers]),
+    action_target( ActionBin
+                 , TargetType
+                 , TargetSpecifiers
+                 , JsonMap
+                 , Req1
+                 , State0
+                 ).
 
 process_spec(SpecifierList, Req, State) ->
     %lager:info("process_spec SpecList ~p", [SpecifierList]),
@@ -289,13 +215,13 @@ process_spec_list([H | T], Output) ->
 %% output_spec creates output for a particular specifiers
 output_spec(<<"profile">>, Output) ->
     %% return new output map with profile information
-    Url = <<"https://github.com/sparrell/openc2-cap/haga.cap.md">>,
-    { ok, maps:put(<<"x_haga">>, Url, Output) };
+    Url = <<"https://github.com/sparrell/openc2-cap/slpfhw.cap.md">>,
+    { ok, maps:put(<<"x_slpfhw">>, Url, Output) };
 
 output_spec(<<"schema">>, Output) ->
   %% return new output map with schema information
   %lager:info("output_spec about to get filename"),
-  case code:priv_dir(haga) of
+  case code:priv_dir(slpfhw) of
         {error, bad_name} ->
             % This occurs when not running as a release; e.g., erl -pa ebin
             % Of course, this will not work for all cases, but should account
@@ -308,7 +234,7 @@ output_spec(<<"schema">>, Output) ->
             ok
   end,
   %lager:info("output_spec about to read file"),
-  case file:read_file(filename:join([PrivDir, "haga.jadn"])) of
+  case file:read_file(filename:join([PrivDir, "slpfhw.jadn"])) of
     {ok, Schema} ->
         %lager:info("output_spec read file ok ~p", [Schema]),
         ok;
@@ -331,3 +257,68 @@ output_spec(<<"version">>, Output) ->
 output_spec(_, _) ->
   %% unknown specifier
   {error, "unknown specifier"}.
+
+target_decode(JsonMap) ->
+  %% all slpf targets consist of a key : [list] information
+  TargetMap = maps:get(<<"target">>, JsonMap),
+  lager:info("target_decode:TargetMap ~p", [TargetMap]),
+  %% validate only one target type, throw exception if !=1
+  TargetTypes = maps:keys(TargetMap),
+  NumTartgetTypes = length(TargetTypes),
+  lager:info("target_decode:NumTartgetTypes ~p", [NumTartgetTypes]),
+  1 = NumTartgetTypes,
+  %% if didn't throw exception, 1 target type so decode it
+  [TargetType | _T] = TargetTypes,
+  lager:info("target_decode:TargetType ~p", [TargetType]),
+  TargetSpecifiers = maps:get(TargetType, TargetMap),
+  lager:info("target_decode:TargetSpecifiers ~p", [TargetSpecifiers]),
+  {TargetType, TargetSpecifiers}.
+
+action_target( <<"query">> %ActionBin
+             , <<"openc2">> %TargetType
+             , TargetSpecifiers
+             , _JsonMap
+             , Req0
+             , State0
+             ) ->
+    lager:info("action=query, target=openc2"),
+    process_spec(TargetSpecifiers, Req0, State0);
+action_target( <<"query">> %ActionBin
+             , <<"hello">> %TargetType
+             , [<<"world">>]
+             , _JsonMap
+             , Req0
+             , State0
+             ) ->
+      lager:info("action=query, target=hello, specs=world"),
+      %% valid so return hello world
+      {200, <<"Hello World">>, Req0, State0};
+action_target( <<"allow">> %ActionBin
+              , <<"ip_addr">> %TargetType
+              , _TargetSpecifiers
+              , _JsonMap
+              , _Req0
+              , _State0
+              ) ->
+          lager:info("action=allow, target=ip_addr"),
+          ok;
+
+action_target( <<"deny">> %ActionBin
+              , <<"ip_addr">> %TargetType
+              , _TargetSpecifiers
+              , _JsonMap
+              , _Req0
+              , _State0
+              ) ->
+          lager:info("action=deny, target=ip_addr"),
+          ok;
+
+action_target( _ActionBin
+             , _TargetType
+             , _TargetSpecifiers
+             , _JsonMap
+             , Req0
+             , State0
+             ) ->
+    lager:info("bad action/target pair"),
+    {400, <<"bad action/target pair">>, Req0, State0}.

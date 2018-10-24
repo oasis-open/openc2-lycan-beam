@@ -66,15 +66,14 @@ handle_json(Req0, State0) ->
     %lager:info("handle_json HttpStatus ~p", [HttpStatus]),
     %lager:info("handle_json HttpErl ~p", [HttpErl]),
     %lager:info("handle_json req2 ~p", [Req2]),
-    %lager:info("handle_json state2 ~p", [State2]),
+    lager:info("handle_json state2 ~p", [State2]),
     ReturnBody = jiffy:encode(HttpErl),
     %lager:info("handle_json ReturnBody ~p", [ReturnBody]),
-    Req3 = cowboy_req:reply(HttpStatus
+    cowboy_req:reply(HttpStatus
                            , #{<<"content-type">> => <<"application/json">>}
                            , ReturnBody
                            , Req2
-                           ),
-    {true, Req3, State2}.
+                           ).
 
 process_json(Req, State0) ->
     %% execute the json after validating

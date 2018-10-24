@@ -1,0 +1,12 @@
+{
+ "action":"deny",
+ "target":{
+   "ip_connection":{
+     "protocol" : "tcp",
+     "src_addr" : "xgIDBA",
+     "dst_addr" : "xjNkEQ",
+     "src_port" : 8080,
+     "dst_port" : 80
+     }
+   }
+}

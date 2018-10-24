@@ -1,0 +1,8 @@
+{
+ "action":"deny",
+ "target":{
+   "ip_connection":{
+     "src_addr" : "xgIDBA"
+     }
+   }
+}
