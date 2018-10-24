@@ -1,7 +1,7 @@
 %%% @author Duncan Sparrell
 %%% @copyright (C) 2018, sFractal Consulting LLC
 %%%
--module(scan_SUITE).
+-module(deny_SUITE).
 -author("Duncan Sparrell").
 -license("MIT").
 -copyright("2018, Duncan Sparrell sFractal Consulting LLC").
@@ -36,7 +36,8 @@
          , suite/0
          , init_per_suite/1
          , end_per_suite/1
-         , test_scan_memory/1
+         , test_deny_ipcon/1
+         , test_deny_2/1
          ]).
 
 %% required for common_test to work
@@ -44,7 +45,8 @@
 
 %% tests to run
 all() ->
-    [ test_scan_memory
+    [ test_deny_ipcon
+    , test_deny_2
     ].
 
 %% timeout if no reply in a minute
@@ -60,11 +62,11 @@ init_per_suite(Config) ->
     %%lager:info("AppList2: ~p~n", [AppList2]),
 
     %% since ct doesn't read sys.config, set configs here
-    application:set_env(haga, port, 8080),
-    application:set_env(haga, listener_count, 5),
+    application:set_env(slpfhw, port, 8080),
+    application:set_env(slpfhw, listener_count, 5),
 
     %% start application
-    {ok, _AppList3} = application:ensure_all_started(haga),
+    {ok, _AppList3} = application:ensure_all_started(slpfhw),
     %%lager:info("AppList3: ~p~n", [AppList3]),
 
     lager_common_test_backend:bounce(debug),
@@ -74,11 +76,11 @@ init_per_suite(Config) ->
 end_per_suite(Config) ->
     Config.
 
-test_scan_memory(Config) ->
+test_deny_ipcon(Config) ->
   %% test json file with scan memory
-  JsonSendFileName = "scan.memory.json",
+  JsonSendFileName = "deny.ipcon.json",
   %% expect results files
-  JsonResponseFileName = "scan.memory.reply.json",
+  JsonResponseFileName = "deny.ipcon.reply.json",
 
   %% expect status=OK ie 200
   StatusCode = 200,
@@ -90,3 +92,20 @@ test_scan_memory(Config) ->
                            ),
 
     ok.
+
+test_deny_2(Config) ->
+    %% test json file with scan memory
+    JsonSendFileName = "deny.2.json",
+    %% expect results files
+    JsonResponseFileName = "deny.2.reply.json",
+
+    %% expect status=OK ie 200
+    StatusCode = 200,
+    %% send command and check results
+    ok = helper:post_oc2_body( JsonSendFileName
+                             , StatusCode
+                             , JsonResponseFileName
+                             , Config
+                             ),
+
+      ok.

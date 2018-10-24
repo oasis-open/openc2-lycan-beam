@@ -1,0 +1,4 @@
+{
+ "action":"query",
+ "target":{"openc2":["version"]}
+ }

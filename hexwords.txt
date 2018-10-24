@@ -1,0 +1,67 @@
+hex words for uuid4
+uuid4 is 128 bits eg
+10ba038e-48da-487b-96e8-8d3b99b6d18a
+f007893f-c172-467b-9216-05bcd6b6075a
+cb2f3800-be85-455a-afd6-78592821c252
+84ff597a-971d-4cb4-91e5-012898c9a10d
+190a4d28-435a-404c-9a58-8fa97ebec178
+5d0f6e3a-d51f-4ee5-9d9c-f9eee8d0f974
+
+
+4 for "for"
+2 for "to"
+8 for "ate"
+10 for "ten"
+1 for "l"
+0 for "o"
+5 for "s"
+7 for "t"
+
+AB1E
+AB0DE
+ACE
+ADD
+A1E
+A11
+A114114A11
+BAD
+BAAAD
+BA11
+BED
+BEEF
+CA11
+CAFE
+C0DE
+C001
+DEAD
+ELF
+FACE
+FA11
+F00D
+4B1D
+LAB
+LABEL
+LACE
+LAD
+LAD1E
+L0AD
+L0AF 
+0FF1CE
+0DDBA11
+
+
+ba5eba11
+bedabb1e
+be5077ed
+b0a710ad
+b01dface
+cab005e
+ca11ab1e
+ca55e77e
+deadbea7
+defec8
+f01dab1e
+f005ba11
+0ddba11
+5ca1ab1e
+7e1eca57
