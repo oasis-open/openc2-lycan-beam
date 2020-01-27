@@ -1,3 +1,4 @@
+# HaHa
 this directory is for an elixir implementation of haha.
 
 will use phoenix webserver
@@ -13,7 +14,20 @@ this is overkill, makes for larger code base/executable, as well as potentially 
 For now it helps with more informative error messages.
 It should be removed before being incorporated in any production code.
 
-# HaHa
+## OpenC2 details
+This code is compliant (best of my knowledge) to
+OpenC2 Language Specification Version 1.0.
+
+To understand what it does, you might want to start by looking at the
+[test data](./test/data) which consists of OpenC2 commands,
+e.g. [./test/data/query_features_pairs.json](query_features_pairs.json),
+and of OpenC2 responses
+e.g. [./test/data/query_features_pairs_reply.json](query_features_pairs_reply.json).
+If there isn't a 'reply' file, then the reply is
+[./test/data/ok_reply.json](ok_reply.json).
+The files starting with err are for testing error conditions.
+
+## HaHa Install & Run
 
 This requires elixir having been installed on your system.
 See https://elixir-lang.org/install.html
