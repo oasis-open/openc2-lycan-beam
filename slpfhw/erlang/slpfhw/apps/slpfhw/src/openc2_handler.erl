@@ -1,5 +1,5 @@
 %%% @author Duncan Sparrell
-%%% @copyright (C) 2017, sFractal Consulting LLC
+%%% @copyright (C) 2018, sFractal Consulting LLC
 %%%
 -module(openc2_handler).
 -author("Duncan Sparrell").
@@ -183,33 +183,33 @@ check_action(JsonMap, Req1, State0) ->
                  , State0
                  ).
 
-process_spec(SpecifierList, Req, State) ->
-    %lager:info("process_spec SpecList ~p", [SpecifierList]),
+query_openc2(SpecifierList, Req, State) ->
+    %lager:info("query_openc2 SpecList ~p", [SpecifierList]),
 
-    case process_spec_list(SpecifierList, #{}) of
+    case q_oc2_spec_list(SpecifierList, #{}) of
         {error, ErrorMsg} ->
-            lager:info("process_spec error ~p", [ErrorMsg]),
+            lager:info("q_oc2_spec_list error ~p", [ErrorMsg]),
             {400, <<"Problem with Target Specifiers">>, Req, State};
         {ok, Output} ->
-            %lager:info("process_spec output ~p", [Output]),
+            %lager:info("q_oc2_spec_list output ~p", [Output]),
             {200, Output, Req, State}
         end.
 
-%% process_spec_list(SpecList, Output) creates output depending on specifiers
-process_spec_list([], Output) ->
+%% q_oc2_spec_list(SpecList, Output) creates output depending on specifiers
+q_oc2_spec_list([], Output) ->
     %% spec list now empty so done
-    %lager:info("process_spec complete Output ~p", [Output]),
+    %lager:info("q_oc2_spec_list complete Output ~p", [Output]),
     {ok, Output};
-process_spec_list([H | T], Output) ->
+q_oc2_spec_list([H | T], Output) ->
       %% recurse thru specs creating output
       case output_spec(H, Output) of
-          %% output_spec returns {Status, NewOutputList} or {error, error msg}
+          %% d_ip_spec returns {Status, NewOutputList} or {error, error msg}
           {error, ErrorMsg} ->
-              lager:info("got to process_spec error ~p", [ErrorMsg]),
+              lager:info("got to q_oc2_spec_list error ~p", [ErrorMsg]),
               {error, ErrorMsg};
           {ok, NewOutputList} ->
-              %lager:info("got to process_spec NewOutputList ~p", [NewOutputList]),
-              process_spec_list(T, NewOutputList)
+              %lager:info("got to q_oc2_spec_list NewOutputList ~p", [NewOutputList]),
+              q_oc2_spec_list(T, NewOutputList)
           end.
 
 %% output_spec creates output for a particular specifiers
@@ -282,7 +282,7 @@ action_target( <<"query">> %ActionBin
              , State0
              ) ->
     lager:info("action=query, target=openc2"),
-    process_spec(TargetSpecifiers, Req0, State0);
+    query_openc2(TargetSpecifiers, Req0, State0);
 action_target( <<"query">> %ActionBin
              , <<"hello">> %TargetType
              , [<<"world">>]
@@ -294,24 +294,25 @@ action_target( <<"query">> %ActionBin
       %% valid so return hello world
       {200, <<"Hello World">>, Req0, State0};
 action_target( <<"allow">> %ActionBin
-              , <<"ip_addr">> %TargetType
+              , <<"ip_connection">> %TargetType
               , _TargetSpecifiers
               , _JsonMap
               , _Req0
               , _State0
               ) ->
-          lager:info("action=allow, target=ip_addr"),
-          ok;
+          lager:info("action=allow, target=ip_connection"),
+          {200, <<"need to fix action=allow, target=ip_connection">>, Req0, State0};
 
 action_target( <<"deny">> %ActionBin
-              , <<"ip_addr">> %TargetType
-              , _TargetSpecifiers
+              , <<"ip_connection">> %TargetType
+              , TargetSpecifiers
               , _JsonMap
-              , _Req0
-              , _State0
+              , Req0
+              , State0
               ) ->
-          lager:info("action=deny, target=ip_addr"),
-          ok;
+          lager:info("action=deny, target=ip_connection"),
+          lager:info("deny ipcon, spec= ~p", [TargetSpecifiers]),
+          deny_ip_con(TargetSpecifiers, Req0, State0);
 
 action_target( _ActionBin
              , _TargetType
@@ -322,3 +323,39 @@ action_target( _ActionBin
              ) ->
     lager:info("bad action/target pair"),
     {400, <<"bad action/target pair">>, Req0, State0}.
+
+  deny_ip_con(TargetSpecifiers, Req0, State0) ->
+    %% action=deny, target=ip_connection
+    %% do superficial check and pretend to execute
+    lager:info("deny_ip_con SpecList ~p", [TargetSpecifiers]),
+
+    case deny_ip_con_list(TargetSpecifiers, #{}) of
+        {error, ErrorMsg} ->
+            lager:info("deny_ip_con_list error ~p", [ErrorMsg]),
+            {400, <<"Problem with Target Specifiers">>, Req, State};
+        {ok, Output} ->
+            lager:info("deny_ip_con_list output ~p", [Output]),
+            {200, Output, Req, State}
+        end.
+
+%% deny_ip_con(SpecList,Output) creates output depending on Specifiers
+%%    for now just skimpy validate specs and say ok
+deny_ip_con_list([], Output) ->
+    %% spec list now empty so done
+    lager:info("deny_ip_con_list complete Output ~p", [Output]),
+    {ok, Output};
+deny_ip_con_list([H | T], Output) ->
+      %% recurse thru specs creating output
+      case d_ip_spec(H, Output) of
+          %% d_ip_spec returns {Status, NewOutputList} or {error, error msg}
+          {error, ErrorMsg} ->
+              lager:info("got to deny_ip_con_list error ~p", [ErrorMsg]),
+              {error, ErrorMsg};
+          {ok, NewOutputList} ->
+              %lager:info("got to deny_ip_con_list NewOutputList ~p", [NewOutputList]),
+              deny_ip_con_list(T, NewOutputList)
+          end.
+
+d_ip_spec(<<"src_addr">>, Output) ->
+  %% got valid spec, add some debug to output
+  { ok, maps:put(<<"src_addr">>, Version, Output) };

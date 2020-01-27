@@ -1,0 +1,4 @@
+{"action": "query",
+  "target": {"x-sfractal-blinky:hello_world": "Hello"}, 
+ "args": {"response_requested": "complete"}
+}

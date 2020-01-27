@@ -1,0 +1,8 @@
+{"action": "query",
+ "target": {
+ 	"sbom": {
+      "type": ["spdx","swid", "cyclonedx"]
+     }
+  },
+ "args": {"response_requested": "complete"}
+}

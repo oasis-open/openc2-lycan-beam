@@ -1,0 +1,5 @@
+{
+  "action": "set",
+  "target": {"x-sfractal-blinky:led_pattern": "flash1"}, 
+  "args": {"response_requested": "complete"}
+}
