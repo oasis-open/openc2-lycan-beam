@@ -1,0 +1,31 @@
+{
+    "results": {
+        "pairs": {
+            "allow": [
+                "ipv4_net",
+                "ipv6_net"
+            ],
+            "cancel": [
+                "command_id"
+            ],
+            "query": [
+                "features",
+                "sbom",
+                "x-sfractal-blinky:hello_world"
+            ],
+            "set": [
+                "x-sfractal-blinky:led",
+                "x-sfractal-blinky:led_pattern",
+                "x-sfractal-blinky:buzzer",
+                "x-sfractal-blinky:valve",
+                "x-sfractal-blinky:spa_key"
+            ]
+        },
+        "profiles": "Duncan needs to do profiles output",
+        "rate_limit": 100000,
+        "versions": [
+            "1.0"
+        ]
+    },
+    "status": "ok"
+}

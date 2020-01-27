@@ -1,0 +1,9 @@
+{"action": "query",
+ "target": {
+ 	"sbom": {
+      "type": ["CycloneDX", "SPDX","SWID"]
+     },
+  "features":  ["version"]
+  },
+ "args": {"response_requested": "complete"}
+}

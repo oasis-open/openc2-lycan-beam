@@ -1,0 +1,5 @@
+{
+  "action": "set",
+  "target": {"x-sfractal-blinky:spa_key": "01234567abcdef01234567"}, 
+  "args": {"response_requested": "complete"}
+}
