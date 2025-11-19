@@ -77,7 +77,7 @@ For now, it is organized by beam application/library.
 <p><b><a id="currentMaintainers">Current Maintainers of this TC Open Repository</a></b></p>
 
 <ul>
-<li><a href="mailto:Duncan@sfractal.com">Duncan Sparrell</a>; GitHub ID: <a href="https://github.com/sparrell/">https://github.com/sparrell/</a>; WWW: <a href="https://www.att.com/">sFractal Consulting</a></li>
+<li><a href="mailto:"></a>; GitHub ID: <a href="/"></a>; WWW: <a href="/"> </a></li>
 </ul>
 
 </div>
